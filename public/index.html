@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="SEDA Student Finance Plan - Get pre-approved for flexible payment plans for your English course at SEDA College in Ireland">
+    <title data-i18n="header.title">SEDA Student Finance Plan</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <img src="/images/logo-seda-college-white.png" alt="SEDA College Logo" class="logo">
+                <div class="language-selector">
+                    <button class="language-btn active" data-lang="en" aria-label="English">🇺🇸 EN</button>
+                    <button class="language-btn" data-lang="pt" aria-label="Português">🇧🇷 PT</button>
+                    <button class="language-btn" data-lang="es" aria-label="Español">🇪🇸 ES</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="section"
+        style="background: linear-gradient(135deg, #023A49 0%, #034a5e 100%); color: white; padding: 4rem 0;">
+        <div class="container text-center">
+            <h1 data-i18n="landing.hero_title" style="color: #FFCB05; margin-bottom: 1.5rem;">Finance Your Dream of
+                Studying in Ireland</h1>
+            <p data-i18n="landing.hero_subtitle" style="font-size: 1.25rem; margin-bottom: 2rem; color: white;">Get
+                pre-approved for flexible payment plans for your English course at SEDA College</p>
+            <div
+                style="background-color: rgba(255, 203, 5, 0.15); border-left: 3px solid #FFCB05; padding: 1rem; margin: 1.5rem auto; max-width: 700px; text-align: left;">
+                <p style="margin: 0; font-size: 0.95rem; color: white;"><strong>ℹ️ Important:</strong> <span
+                        data-i18n="landing.commercial_notice">The SEDA Student Finance Plan uses specific pricing
+                        conditions that may differ from cash or promotional payment options.</span></p>
+            </div>
+            <a href="/apply.html" class="btn btn-primary btn-large" data-i18n="landing.cta_button">Start Your
+                Application</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="text-center mb-xl" data-i18n="landing.features_title">Why Choose Our Finance Plan?</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div class="card text-center">
+                    <div style="font-size: 3rem; color: #FFCB05; margin-bottom: 1rem;">💳</div>
+                    <h3 data-i18n="landing.feature_1_title">Flexible Payment Options</h3>
+                    <p data-i18n="landing.feature_1_desc">Pay in 6, 12, 15, or 18 monthly installments</p>
+                </div>
+                <div class="card text-center">
+                    <div style="font-size: 3rem; color: #FFCB05; margin-bottom: 1rem;">⚡</div>
+                    <h3 data-i18n="landing.feature_2_title">Quick Pre-Approval</h3>
+                    <p data-i18n="landing.feature_2_desc">Get your financing decision in just a few days</p>
+                </div>
+                <div class="card text-center">
+                    <div style="font-size: 3rem; color: #FFCB05; margin-bottom: 1rem;">📊</div>
+                    <h3 data-i18n="landing.feature_3_title">Transparent Rates</h3>
+                    <p data-i18n="landing.feature_3_desc">Fixed interest rates with no hidden fees</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section class="section" style="background-color: #F8F9FA;">
+        <div class="container container-sm">
+            <h2 class="text-center mb-lg" data-i18n="landing.calculator_title">Calculate Your Finance Plan</h2>
+
+            <div class="card" id="calculator">
+                <div class="card-header">
+                    <h3 class="card-title" data-i18n="calculator.title">Finance Plan Calculator</h3>
+                </div>
+
+                <div class="calculator-grid">
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="calculator.campus">Campus</label>
+                        <select id="campus" class="form-select">
+                            <option value="dublin" data-i18n="calculator.campus_dublin">Dublin</option>
+                            <option value="cork" data-i18n="calculator.campus_cork">Cork</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="calculator.shift">Shift</label>
+                        <select id="shift" class="form-select">
+                            <option value="am" data-i18n="calculator.shift_am">Morning (AM)</option>
+                            <option value="pm" data-i18n="calculator.shift_pm">Afternoon (PM)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="calculator.entry_percent">Entry Payment</label>
+                        <select id="entry-percent" class="form-select">
+                            <option value="0.30" data-i18n="calculator.entry_30">30% Entry</option>
+                            <option value="0.40" data-i18n="calculator.entry_40">40% Entry</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="calculator.installments">Number of Installments</label>
+                        <select id="installments" class="form-select">
+                            <option value="6" data-i18n="calculator.installments_6">6 months</option>
+                            <option value="12" data-i18n="calculator.installments_12" selected>12 months</option>
+                            <option value="15" data-i18n="calculator.installments_15">15 months</option>
+                            <option value="18" data-i18n="calculator.installments_18">18 months</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="calculator-result mt-lg">
+                    <h4 data-i18n="calculator.result_title" style="margin-bottom: 1rem;">Your Finance Plan Summary</h4>
+
+                    <div class="result-row">
+                        <span class="result-label" data-i18n="calculator.package_price">Package Price (incl. €100 FDI
+                            fee)</span>
+                        <span class="result-value" id="result-price-base">€2,950</span>
+                    </div>
+
+                    <div class="result-row">
+                        <span class="result-label" data-i18n="calculator.entry_amount">Entry Payment</span>
+                        <span class="result-value" id="result-entry-amount">€885</span>
+                    </div>
+
+                    <div class="result-row">
+                        <span class="result-label" data-i18n="calculator.financed_amount">Financed Amount</span>
+                        <span class="result-value" id="result-financed-amount">€2,065</span>
+                    </div>
+
+                    <div class="result-row">
+                        <span class="result-label" data-i18n="calculator.interest_rate">Interest Rate</span>
+                        <span class="result-value" id="result-interest-rate">5%</span>
+                    </div>
+
+                    <div class="result-row">
+                        <span class="result-label" data-i18n="calculator.monthly_installment">Monthly Installment</span>
+                        <span class="result-value" id="result-monthly-installment">€180.54</span>
+                    </div>
+                </div>
+
+                <div class="disclaimer">
+                    <strong>⚠️</strong> <span data-i18n="calculator.disclaimer">This is an estimated simulation. Final
+                        approval is subject to analysis.</span>
+                </div>
+
+                <div
+                    style="background-color: #fff3cd; border-left: 4px solid #E28E26; padding: 1rem; margin-top: 1rem; border-radius: 4px; font-size: 0.875rem;">
+                    <strong>ℹ️</strong> <span data-i18n="calculator.commercial_notice">The SEDA Student Finance Plan
+                        uses specific pricing conditions that may differ from cash or promotional payment
+                        options.</span>
+                </div>
+
+                <a href="/apply.html" class="btn btn-primary btn-large btn-block mt-lg"
+                    data-i18n="landing.cta_button">Start Your Application</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <img src="/images/logo-seda-college.png" alt="SEDA College Logo" class="footer-logo">
+                <p data-i18n="footer.copyright">© 2025 SEDA College. All rights reserved.</p>
+                <p data-i18n="footer.powered_by">Finance Plan powered by FDI</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/i18n.js"></script>
+    <script src="/js/calculator.js"></script>
+</body>
+
+</html>

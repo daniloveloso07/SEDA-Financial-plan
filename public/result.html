@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Application Result - SEDA Finance Plan">
+    <title data-i18n="result.title">Application Submitted - SEDA College</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/index.html">
+                    <img src="/images/logo-seda-college-white.png" alt="SEDA College Logo" class="logo">
+                </a>
+                <div class="language-selector">
+                    <button class="language-btn active" data-lang="en" aria-label="English">🇺🇸 EN</button>
+                    <button class="language-btn" data-lang="pt" aria-label="Português">🇧🇷 PT</button>
+                    <button class="language-btn" data-lang="es" aria-label="Español">🇪🇸 ES</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Result Section -->
+    <section class="section">
+        <div class="container">
+            <div class="result-container">
+                <h1 data-i18n="result.title">Application Submitted</h1>
+
+                <div id="status-badge" class="status-badge success">
+                    <!-- Status will be inserted here -->
+                </div>
+
+                <div id="status-message" class="mb-lg">
+                    <!-- Message will be inserted here -->
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title" data-i18n="result.financial_summary">Financial Summary</h3>
+                    </div>
+
+                    <div id="financial-summary" class="financial-summary">
+                        <!-- Financial details will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title" data-i18n="result.next_steps">Next Steps</h3>
+                    </div>
+
+                    <p data-i18n="result.contact_info">A consultant will reach out to you via email or WhatsApp within
+                        2-3 business days.</p>
+
+                    <p><strong data-i18n="result.reference">Reference Number</strong>: <span
+                            id="reference-number"></span></p>
+
+                    <!-- Contact button for OUT_OF_PROFILE status -->
+                    <div id="contact-cta" style="display: none; margin-top: 1.5rem;">
+                        <a href="https://wa.me/353894038771" target="_blank" rel="noopener noreferrer"
+                            class="btn btn-primary btn-large btn-block" data-i18n="result.contact_consultant">Contact a
+                            SEDA Consultant</a>
+                        <p style="margin-top: 0.5rem; font-size: 0.875rem; text-align: center; color: #6C757D;">We're
+                            here to help you find the best solution</p>
+                    </div>
+                </div>
+
+                <a href="/index.html" class="btn btn-secondary btn-large mt-lg">Back to Home</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <img src="/images/logo-seda-college.png" alt="SEDA College Logo" class="footer-logo">
+                <p data-i18n="footer.copyright">© 2025 SEDA College. All rights reserved.</p>
+                <p data-i18n="footer.powered_by">Finance Plan powered by FDI</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/i18n.js"></script>
+    <script src="/js/result.js"></script>
+</body>
+
+</html>

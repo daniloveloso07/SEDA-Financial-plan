@@ -1,0 +1,29 @@
+{
+  "name": "seda-finance-plan",
+  "version": "1.0.0",
+  "description": "SEDA Student Finance Plan by FDI - Internal financing pre-approval platform",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.js",
+    "start": "NODE_ENV=production node server/index.js",
+    "db:migrate": "node server/db/migrate.js"
+  },
+  "keywords": [
+    "seda",
+    "finance",
+    "student",
+    "ireland"
+  ],
+  "author": "SEDA College",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "node-fetch": "^2.7.0",
+    "nodemailer": "^6.9.7",
+    "pg": "^8.11.3"
+  }
+}
