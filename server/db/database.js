@@ -11,6 +11,12 @@ const { Pool } = pg;
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+console.log(`[DB] NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`[DB] DATABASE_URL is ${process.env.DATABASE_URL ? 'defined' : 'UNDEFINED'}`);
+if (process.env.DATABASE_URL) {
+  console.log(`[DB] DATABASE_URL length: ${process.env.DATABASE_URL.length}`);
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: isProduction ? { rejectUnauthorized: false } : false

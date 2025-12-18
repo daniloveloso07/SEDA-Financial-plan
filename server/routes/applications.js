@@ -11,9 +11,6 @@ import { convertToEUR } from '../lib/fx-service.js';
 
 const router = express.Router();
 
-// Initialize database on module load
-initializeDatabase().catch(console.error);
-
 // Currency mapping for backend (same as frontend)
 const CURRENCY_BY_COUNTRY = {
     'brazil': 'BRL',

@@ -9,6 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import rateLimit from 'express-rate-limit';
 import applicationsRouter from './routes/applications.js';
+import { initializeDatabase } from './db/database.js';
 
 dotenv.config();
 
@@ -63,8 +64,19 @@ app.use((err, req, res, next) => {
     });
 });
 
+
 // Start server
-app.listen(PORT, () => {
-    console.log(`✅ SEDA Finance Plan server running on http://localhost:${PORT}`);
-    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+const startServer = async () => {
+    try {
+        await initializeDatabase();
+        app.listen(PORT, () => {
+            console.log(`✅ SEDA Finance Plan server running on http://localhost:${PORT}`);
+            console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+        });
+    } catch (error) {
+        console.error('❌ Failed to start server due to database error:', error);
+        process.exit(1);
+    }
+};
+
+startServer();
