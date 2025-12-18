@@ -36,14 +36,24 @@
                 <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
             </div>
 
-            <!-- Chat Container -->
-            <div class="chat-container">
-                <div class="chat-messages" id="chat-messages">
-                    <!-- Messages will be added here dynamically -->
-                </div>
+            <!-- Wizard Container -->
+            <div class="wizard-container">
+                <div class="wizard-card" id="wizard-card">
+                    <!-- Navigation Header inside Card -->
+                    <div class="wizard-header">
+                        <button id="back-btn" class="btn-text" style="visibility: hidden" aria-label="Go back">← <span
+                                data-i18n="form.back">Back</span></button>
+                        <div class="step-indicator" id="step-indicator"></div>
+                    </div>
 
-                <div class="chat-input-area" id="chat-input-area">
-                    <!-- Input will be added here dynamically -->
+                    <!-- Dynamic Content -->
+                    <div id="question-container" class="question-container">
+                        <!-- Question text goes here -->
+                    </div>
+
+                    <div id="input-container" class="input-container">
+                        <!-- Inputs/Options go here -->
+                    </div>
                 </div>
             </div>
         </div>
