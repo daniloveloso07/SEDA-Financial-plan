@@ -291,7 +291,7 @@ export async function sendInternalEmail(application) {
             <tr><td>Address</td><td>${application.student_address}</td></tr>
             <tr><td>Postal Code</td><td>${application.student_postal}</td></tr>
             <tr><td>Occupation</td><td>${application.student_occupation}</td></tr>
-            <tr><td>Monthly Income</td><td>${application.student_income ? '€' + application.student_income : 'Not provided'}</td></tr>
+            <tr><td>Monthly Income</td><td>${application.student_income_currency === 'EUR' ? '€' : application.student_income_currency + ' '}${application.student_income} ${application.student_income_eur_est ? '(Est. €' + Math.round(application.student_income_eur_est) + ')' : ''}</td></tr>
             <tr><td>Country</td><td>${application.country.toUpperCase()}</td></tr>
             <tr><td>Program Duration</td><td>${application.duration_choice}</td></tr>
           </table>
@@ -308,7 +308,7 @@ export async function sendInternalEmail(application) {
             <tr><td>Postal Code</td><td>${application.guarantor_postal}</td></tr>
             <tr><td>Occupation</td><td>${application.guarantor_occupation}</td></tr>
             <tr><td>Relationship</td><td>${application.guarantor_relationship}</td></tr>
-            <tr><td>Monthly Income</td><td>${application.guarantor_income ? '€' + application.guarantor_income : 'Not provided'}</td></tr>
+            <tr><td>Monthly Income</td><td>${application.guarantor_income_currency === 'EUR' ? '€' : application.guarantor_income_currency + ' '}${application.guarantor_income} ${application.guarantor_income_eur_est ? '(Est. €' + Math.round(application.guarantor_income_eur_est) + ')' : ''}</td></tr>
           </table>
         </div>
       </div>
