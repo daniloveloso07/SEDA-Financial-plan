@@ -25,6 +25,73 @@ const CURRENCY_BY_COUNTRY = {
 };
 
 /**
+ * GET /api/applications/test-email
+ * Temporary debug endpoint to verify SMTP connection
+ */
+router.get('/test-email', async (req, res) => {
+    try {
+        const nodemailer = (await import('nodemailer')).default;
+
+        const config = {
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT || '587'),
+            secure: process.env.SMTP_PORT === '465',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS?.substring(0, 3) + '***' // Masked for safety in logs
+            }
+        };
+
+        // Attempt actual connection
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT || '587'),
+            secure: process.env.SMTP_PORT === '465',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        console.log('Testing SMTP Connection with config:', config);
+
+        // 1. Verify connection
+        await transporter.verify();
+        console.log('✅ SMTP Verify Success');
+
+        // 2. Send Test Email
+        const info = await transporter.sendMail({
+            from: process.env.FROM_EMAIL,
+            to: process.env.INTERNAL_NOTIFICATION_EMAILS?.split(',')[0] || process.env.FROM_EMAIL, // Send to self if no internal list
+            subject: 'SEDA Test Email - Connection Success',
+            text: 'If you are reading this, your SMTP configuration is correct! 🚀'
+        });
+
+        console.log('✅ Email Sent:', info.messageId);
+
+        res.status(200).json({
+            success: true,
+            message: 'SMTP Connection Successful!',
+            config: config,
+            verify: 'OK',
+            send: 'OK',
+            messageId: info.messageId
+        });
+
+    } catch (error) {
+        console.error('❌ SMTP Test Failed:', error);
+        res.status(500).json({
+            success: false,
+            message: 'SMTP Test Failed',
+            error_code: error.code,
+            error_response: error.response,
+            error_message: error.message,
+            stack: error.stack
+        });
+    }
+});
+
+/**
  * POST /api/applications
  * Submit a new finance plan application
  */
