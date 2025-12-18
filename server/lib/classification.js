@@ -42,6 +42,18 @@ function isGuarantorComplete(data) {
 }
 
 /**
+ * Calculate approximate months until travel from today
+ */
+function getMonthsUntilTravel(travelDate) {
+    if (!travelDate) return 0;
+    const travel = new Date(travelDate);
+    const today = new Date();
+    const diffTime = travel - today;
+    // Difference in days / average month length
+    return diffTime / (1000 * 60 * 60 * 24 * 30.44);
+}
+
+/**
  * Classify application based on business rules
  * 
  * OUT_OF_PROFILE if:
@@ -54,8 +66,11 @@ function isGuarantorComplete(data) {
  * PRE_APPROVED_UNDER_REVIEW if:
  * - Basic profile met
  * - Income Ratio Rule satisfied (Installment <= 30% of income)
+ * - Travel date >= 3 months from today
  * 
- * UNDER_ANALYSIS for all other valid edge cases or if 30% rule is slightly breached.
+ * UNDER_ANALYSIS if:
+ * - Travel date < 3 months (High Risk)
+ * - 30% rule is slightly breached for first-degree relatives
  */
 export function classifyApplication(data) {
     const studentAge = calculateAge(data.student_birthdate);
@@ -63,6 +78,7 @@ export function classifyApplication(data) {
     const country = (data.country || '').toLowerCase();
     const duration = data.duration || data.duration_choice || 'long';
     const guarantorComplete = isGuarantorComplete(data);
+    const monthsUntilTravel = getMonthsUntilTravel(data.travel_date);
 
     // Incomes in EUR
     const studentIncomeEUR = parseFloat(data.student_income_eur_est || 0);
@@ -80,7 +96,13 @@ export function classifyApplication(data) {
     if (entryPercent < 0.29) return 'OUT_OF_PROFILE'; // Allow for slight rounding
     if (!guarantorComplete) return 'OUT_OF_PROFILE';
 
-    // 2. Income Ratio Rule (The 30% Rule)
+    // 2. High Risk: Travel Date < 3 Months
+    // If travel is less than 3 months away, it's never pre-approved.
+    if (monthsUntilTravel < 3) {
+        return 'UNDER_ANALYSIS';
+    }
+
+    // 3. Income Ratio Rule (The 30% Rule)
     // If monthly installment is more than 30% of combined income
     const incomeRatio = combinedIncomeEUR > 0 ? (monthlyInstallment / combinedIncomeEUR) : 999;
 
@@ -92,7 +114,7 @@ export function classifyApplication(data) {
         return 'OUT_OF_PROFILE';
     }
 
-    // 3. Success Case
+    // 4. Success Case
     if (combinedIncomeEUR > 0) {
         return 'PRE_APPROVED_UNDER_REVIEW';
     }
