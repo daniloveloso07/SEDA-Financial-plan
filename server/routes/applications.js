@@ -197,7 +197,7 @@ router.post('/', async (req, res) => {
         console.error('Application submission error:', error);
         res.status(500).json({
             success: false,
-            message: 'An error occurred while processing your application. Please try again.'
+            message: `An error occurred: ${error.message}`
         });
     }
 });

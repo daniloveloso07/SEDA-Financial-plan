@@ -69,7 +69,7 @@ class ConversationalForm {
                 course_type: 'general_english',
                 shift: 'am',
                 installments: 12,
-                entry_percent: 30,
+                entry_percent: 0.30,
                 total_value_eur: 3000 // Dummy value just to pass checks
             };
         }
