@@ -7,11 +7,20 @@ dotenv.config();
  * This bypasses SMTP port blocking on cloud providers like Railway.
  */
 async function sendResendEmail({ from, to, subject, html }) {
-  const apiKey = process.env.SMTP_PASS; // Using the existing env var for the API Key
+  const apiKey = (process.env.SMTP_PASS || '').trim();
 
   if (!apiKey) {
     throw new Error('Missing RESEND_API_KEY (SMTP_PASS)');
   }
+
+  // Robustly clean emails (handle newlines, spaces, etc.)
+  const cleanFrom = (from || process.env.FROM_EMAIL || '').toString().trim().replace(/[\r\n\t]/g, '');
+  const fromName = "SEDA College Finance";
+
+  // Format recipients
+  const recipients = (Array.isArray(to) ? to : [to])
+    .map(email => email.toString().trim().replace(/[\r\n\t]/g, ''))
+    .filter(email => email.includes('@'));
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -20,8 +29,8 @@ async function sendResendEmail({ from, to, subject, html }) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      from: from || process.env.FROM_EMAIL,
-      to: Array.isArray(to) ? to : [to],
+      from: `${fromName} <${cleanFrom}>`,
+      to: recipients,
       subject,
       html
     })
