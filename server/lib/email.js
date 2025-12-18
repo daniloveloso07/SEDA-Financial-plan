@@ -1,22 +1,41 @@
-// ═══════════════════════════════════════════════════════════
-// EMAIL SERVICE - SMTP INTEGRATION
-// ═══════════════════════════════════════════════════════════
-
-import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Create SMTP transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_PORT === '465',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
+/**
+ * Internal helper to send email via Resend API (HTTPS)
+ * This bypasses SMTP port blocking on cloud providers like Railway.
+ */
+async function sendResendEmail({ from, to, subject, html }) {
+  const apiKey = process.env.SMTP_PASS; // Using the existing env var for the API Key
+
+  if (!apiKey) {
+    throw new Error('Missing RESEND_API_KEY (SMTP_PASS)');
   }
-});
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: from || process.env.FROM_EMAIL,
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      html
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error('❌ Resend API Error:', data);
+    throw new Error(data.message || 'Failed to send email via Resend API');
+  }
+
+  return data;
+}
 
 // Translations for email templates
 const EMAIL_TRANSLATIONS = {
@@ -179,8 +198,8 @@ export async function sendApplicantEmail(application, language = 'en') {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`✅ Applicant email sent to ${application.student_email}`);
+    const data = await sendResendEmail(mailOptions);
+    console.log(`✅ Applicant email sent to ${application.student_email}`, data);
   } catch (error) {
     console.error('❌ Error sending applicant email:', error);
     throw error;
@@ -301,8 +320,8 @@ export async function sendInternalEmail(application) {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`✅ Internal email sent to ${recipients.join(', ')}`);
+    const data = await sendResendEmail(mailOptions);
+    console.log(`✅ Internal email sent to ${recipients.join(', ')}`, data);
   } catch (error) {
     console.error('❌ Error sending internal email:', error);
     throw error;
