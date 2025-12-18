@@ -67,6 +67,31 @@ router.post('/', async (req, res) => {
             });
         }
 
+        // Helper to sanitize currency string to number
+        const sanitizeCurrency = (val) => {
+            if (!val) return null;
+            if (typeof val === 'number') return val;
+            // Remove 'R$', '€', whitespace
+            let str = val.toString().replace(/[^\d.,-]/g, '');
+            // Check formatted style: 100.000,00 (EU/BR) vs 100,000.00 (US)
+            if (str.includes(',') && str.includes('.')) {
+                if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
+                    // 100.000,00 -> Remove dots, replace comma with dot
+                    str = str.replace(/\./g, '').replace(',', '.');
+                } else {
+                    // 100,000.00 -> Remove commas (standard JS parsable if we remove commas)
+                    str = str.replace(/,/g, '');
+                }
+            } else if (str.includes(',')) {
+                // 100,00 -> Replace comma with dot
+                str = str.replace(',', '.');
+            }
+            return parseFloat(str) || null;
+        };
+
+        const studentIncomeClean = sanitizeCurrency(data.student_income);
+        const guarantorIncomeClean = sanitizeCurrency(data.guarantor_income);
+
         // Handle FX conversion for incomes
         const currencyCode = CURRENCY_BY_COUNTRY[data.country] || 'USD';
 
@@ -76,14 +101,14 @@ router.post('/', async (req, res) => {
 
         // FX Conversion with fallback
         try {
-            if (data.student_income) {
-                studentFX = await convertToEUR(parseFloat(data.student_income), currencyCode);
+            if (studentIncomeClean) {
+                studentFX = await convertToEUR(studentIncomeClean, currencyCode);
                 fxMetadata.rate = studentFX.rate;
                 fxMetadata.date = studentFX.date;
             }
 
-            if (data.guarantor_income) {
-                guarantorFX = await convertToEUR(parseFloat(data.guarantor_income), currencyCode);
+            if (guarantorIncomeClean) {
+                guarantorFX = await convertToEUR(guarantorIncomeClean, currencyCode);
                 // Use guarantor FX if student FX failed or wasn't provided
                 if (!fxMetadata.rate) {
                     fxMetadata.rate = guarantorFX.rate;
@@ -114,7 +139,7 @@ router.post('/', async (req, res) => {
             student_address: data.student_address,
             student_postal: data.student_postal,
             student_occupation: data.student_occupation,
-            student_income: data.student_income || null,
+            student_income: studentIncomeClean,
             student_income_currency: currencyCode,
             student_income_eur_est: studentFX.amountEUR,
             travel_date: data.travel_date,
@@ -129,7 +154,7 @@ router.post('/', async (req, res) => {
             guarantor_postal: data.guarantor_postal,
             guarantor_occupation: data.guarantor_occupation,
             guarantor_relationship: data.guarantor_relationship,
-            guarantor_income: data.guarantor_income || null,
+            guarantor_income: guarantorIncomeClean,
             guarantor_income_currency: currencyCode,
             guarantor_income_eur_est: guarantorFX.amountEUR,
             fx_rate: fxMetadata.rate,
