@@ -73,8 +73,8 @@ async function fetchECBRate(currencyCode) {
         const columns = dataLine.split(',');
 
         // CSV format: FREQ,CURRENCY,CURRENCY_DENOM,EXR_TYPE,EXR_SUFFIX,TIME_PERIOD,OBS_VALUE,...
-        const obsValue = parseFloat(columns[6]);
-        const timePeriod = columns[5];
+        const obsValue = parseFloat(columns[7]);
+        const timePeriod = columns[6];
 
         if (isNaN(obsValue)) {
             throw new Error('Invalid rate value from ECB');
