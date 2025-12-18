@@ -47,6 +47,13 @@ const TRANSLATIONS = {
             "commercial_notice": "The SEDA Student Finance Plan uses specific pricing conditions that may differ from cash or promotional payment options."
         },
         "form": {
+            "welcome_1": "Hello! It's great that you're interested in the SEDA Student Finance Plan.",
+            "welcome_2": "Before we start, I have an important notice for you! filling out this application does not guarantee access to benefits.",
+            "welcome_3": "All applications are carefully evaluated. At the end of this evaluation you will see if you were approved.",
+            "welcome_4": "During your 6 months of the project, you will have access to: \n- Telemedicine 24/7 Free\n- Up to 80% discount on exams and appointments\n- Discounts on medicines\n- Dental coverage",
+            "start_btn": "Start!",
+            "name_question": "I'd like to call you by your name from now on. What is your name?",
+            "lets_go": "Perfect, {{name}}. Now please give me your WhatsApp so I can contact you if you are selected.",
             "title": "Finance Application",
             "student_section": "Student Information",
             "guarantor_section": "Guarantor Information",
@@ -76,7 +83,7 @@ const TRANSLATIONS = {
             "relationship_other": "Other",
             "privacy_notice": "I consent to the processing of my personal data for the purpose of this finance application.",
             "submit": "Submit Application",
-            "next": "Next",
+            "next": "Send",
             "validation_required": "This field is required",
             "validation_email": "Please enter a valid email address",
             "validation_phone": "Please enter a valid phone number with country code",
@@ -189,7 +196,15 @@ const TRANSLATIONS = {
             "validation_required": "Este campo é obrigatório",
             "validation_email": "Por favor, insira um endereço de email válido",
             "validation_phone": "Por favor, insira um número de telefone válido com código do país",
-            "validation_age": "Você deve ter pelo menos 18 anos"
+            "validation_age": "Você deve ter pelo menos 18 anos",
+            "welcome_1": "Olá! Que legal que você se interessou pelo Plano de Financiamento SEDA.",
+            "welcome_2": "Antes de começarmos, tenho um aviso importante pra te dar! O preenchimento desta aplicação não garante o seu acesso ao benefícios.",
+            "welcome_3": "Todas as aplicações são cuidadosamente avaliadas e, ao final desta avaliação você já consegue ver se foi aprovado.",
+            "welcome_4": "Durante seus 6 meses do projeto, você terá direito a: \n- Telemedicina 24horas Gratuito\n- Até 80% de descontos em exames e consultas\n- Descontos em medicamentos e farmácias\n- Cobertura odontológica",
+            "start_btn": "Começar!",
+            "name_question": "Gostaria de te chamar pelo nome a partir de agora. Como você se chama?",
+            "lets_go": "Perfeito, {{name}}. Agora me passa o seu WhatsApp, pra que eu possa entrar em contato, caso você seja selecionado.",
+            "next": "Enviar"
         },
         "result": {
             "title": "Aplicação Enviada",
@@ -298,7 +313,15 @@ const TRANSLATIONS = {
             "validation_required": "Este campo es obligatorio",
             "validation_email": "Por favor, ingresa una dirección de correo electrónico válida",
             "validation_phone": "Por favor, ingresa un número de teléfono válido con código de país",
-            "validation_age": "Debes tener al menos 18 años"
+            "validation_age": "Debes tener al menos 18 años",
+            "welcome_1": "¡Hola! Qué bueno que te interesaste por el Plan de Financiamiento SEDA.",
+            "welcome_2": "Antes de comenzar, ¡tengo un aviso importante para ti! completar esta solicitud no garantiza el acceso a los beneficios.",
+            "welcome_3": "Todas las solicitudes son evaluadas cuidadosamente y al final de esta evaluación podrás ver si fuiste aprobado.",
+            "welcome_4": "Durante tus 6 meses del proyecto, tendrás acceso a: \n- Telemedicina 24 horas Gratuita\n- Hasta 80% de descuento en exámenes y consultas\n- Descuentos en medicamentos y farmacias\n- Cobertura odontológica",
+            "start_btn": "¡Comenzar!",
+            "name_question": "Me gustaría llamarte por tu nombre a partir de ahora. ¿Cómo te llamas?",
+            "lets_go": "Perfecto, {{name}}. Ahora pásame tu WhatsApp, para que pueda contactarte si eres seleccionado.",
+            "next": "Enviar"
         },
         "result": {
             "title": "Solicitud Enviada",

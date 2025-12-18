@@ -55,21 +55,48 @@ class ConversationalForm {
     }
 
     init() {
-        this.showWelcomeMessage();
-        this.askNextQuestion();
+        // Start with the welcome story instead of the first question
+        this.runWelcomeStory();
     }
 
-    showWelcomeMessage() {
-        const message = i18n.currentLanguage === 'en'
-            ? "Welcome! I'll help you apply for the SEDA Finance Plan. Let's start with some basic information."
-            : i18n.currentLanguage === 'pt'
-                ? "Bem-vindo! Vou ajudá-lo a se candidatar ao Plano de Financiamento SEDA. Vamos começar com algumas informações básicas."
-                : "¡Bienvenido! Te ayudaré a solicitar el Plan de Financiamiento SEDA. Comencemos con información básica.";
+    async runWelcomeStory() {
+        // Sequence of welcome messages
+        const messages = [
+            'welcome_1',
+            'welcome_2',
+            'welcome_3',
+            'welcome_4'
+        ];
 
-        this.addBotMessage(message);
+        for (const key of messages) {
+            await this.addBotMessageWithDelay(i18n.t(`form.${key}`), 800);
+        }
+
+        // Show Start Button
+        this.showStartButton();
     }
 
-    askNextQuestion() {
+    showStartButton() {
+        this.inputArea.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.textContent = i18n.t('form.start_btn');
+        btn.style.width = '100%';
+        btn.style.padding = '1rem';
+        btn.style.fontSize = '1.1rem';
+
+        btn.onclick = () => {
+            // User "says" Start
+            this.addUserMessage(i18n.t('form.start_btn'));
+            this.inputArea.innerHTML = '';
+            // Proceed to first question (Name)
+            this.askNextQuestion();
+        };
+
+        this.inputArea.appendChild(btn);
+    }
+
+    async askNextQuestion() {
         if (this.currentStep >= FORM_FLOW.length) {
             this.showPrivacyConsent();
             return;
@@ -77,16 +104,56 @@ class ConversationalForm {
 
         const field = FORM_FLOW[this.currentStep];
 
-        // Section Headers
-        if (this.currentStep === 0 || (this.currentStep > 0 && FORM_FLOW[this.currentStep - 1].section !== field.section)) {
-            const sectionKey = field.section === 'student' ? 'form.student_section' : 'form.guarantor_section';
-            this.addBotMessage(`<strong>${i18n.t(sectionKey)}</strong>`);
+        // determine the question text
+        let questionText = i18n.t(field.i18nKey);
+
+        // Special Overrides for "Humanized" flow
+        if (field.id === 'student_name') {
+            questionText = i18n.t('form.name_question');
+        }
+        else if (field.id === 'student_email') {
+            // Example: "Cool! Now give me your email..."
+            // For now we stick to standard or add more keys later if requested.
+            // We can say "Thanks, {name}..." if we want.
+            // But the user specifically asked for Name -> Phone transition.
         }
 
-        const question = i18n.t(field.i18nKey);
-        this.addBotMessage(question);
+        // Add delay for realism
+        await this.addBotMessageWithDelay(questionText, 600);
+
         this.showInput(field);
         this.updateProgress();
+    }
+
+    // Helper for natural delays
+    addBotMessageWithDelay(text, delay) {
+        return new Promise(resolve => {
+            // Show typing indicator? (Optional enhancement)
+            this.showTyping();
+
+            setTimeout(() => {
+                this.hideTyping();
+                this.addBotMessage(text);
+                resolve();
+            }, delay);
+        });
+    }
+
+    showTyping() {
+        // Simple typing indicator
+        if (document.getElementById('typing-indicator')) return;
+
+        const typingDiv = document.createElement('div');
+        typingDiv.id = 'typing-indicator';
+        typingDiv.className = 'chat-message bot typing';
+        typingDiv.innerHTML = '<div class="message-bubble">...</div>';
+        this.messagesContainer.appendChild(typingDiv);
+        this.scrollToBottom();
+    }
+
+    hideTyping() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) typingIndicator.remove();
     }
 
     showInput(field) {
@@ -172,54 +239,23 @@ class ConversationalForm {
     goBack() {
         if (this.currentStep === 0) return;
 
-        // Visual feedback: remove last 2 messages (Bot question + User answer)
-        // Note: Section headers are also messages, so we need be careful.
-        // Simple heuristic: Remove last user message, and any bot messages after it.
+        // Try to remove the last question group (Question + Answer + potential transitions)
+        // This is a bit tricky with dynamic transitions, but removing the last few nodes usually works for visual reset.
+        // We'll trust the user to re-read context if needed.
 
-        // Easier approach for now: Just remove the last 2 nodes.
-        // 1. Remove the current question (bot)
-        if (this.messagesContainer.lastChild) this.messagesContainer.lastChild.remove();
+        let removeCount = 2; // Default: Bot Q + User A
+        // If we had a transition message, it might be 3 nodes.
 
-        // 2. Remove the previous answer (user)
-        if (this.messagesContainer.lastChild && this.messagesContainer.lastChild.classList.contains('user')) {
+        while (removeCount > 0 && this.messagesContainer.lastChild) {
             this.messagesContainer.lastChild.remove();
-        }
-
-        // 3. Did we remove a section header? If the step before had a section header, it's still there.
-        // Actually, askNextQuestion adds the question. So removing the last node removes the question we just asked (that the user wants to leave).
-        // Then we need to remove the interaction *before* that, which is the user's answer to the *previous* question.
-
-        // Let's refine:
-        // Current state: User is at Step N. Bot just asked Question N.
-        // User clicks Back.
-        // We want to be at Step N-1.
-        // We need to remove: Question N (Bot) AND Answer N-1 (User).
-        // Then we call askNextQuestion() which re-asks Question N-1.
-
-        // Wait, if we just decrement and call askNextQuestion, it will add the question bubble AGAIN.
-        // So we need to remove the *original* Question N-1 bubble too?
-        // No, typically in chat, "Back" means "Undo last action". 
-        // Action 1: Bot asks Q1.
-        // Action 2: User answers A1.
-        // Action 3: Bot asks Q2.
-        // User clicks Back.
-        // Result: Remove Q2. Remove A1. Bot asks Q1 again.
-
-        // Implementation:
-        this.messagesContainer.lastChild?.remove(); // Remove Q2
-        this.messagesContainer.lastChild?.remove(); // Remove A1
-
-        // Edge case: Section headers. If Q2 also added a section header, we need to remove that too.
-        // We can check class list.
-        while (this.messagesContainer.lastChild && this.messagesContainer.lastChild.innerHTML.includes('<strong>')) {
-            this.messagesContainer.lastChild.remove();
+            removeCount--;
         }
 
         this.currentStep--;
         this.askNextQuestion();
     }
 
-    handleAnswer(value, field) {
+    async handleAnswer(value, field) {
         const validation = this.validateField(value, field);
         if (!validation.valid) {
             this.showError(validation.message);
@@ -228,10 +264,9 @@ class ConversationalForm {
 
         this.formData[field.id] = value;
 
-        // Logic for display value (currency, date, map selection to text)
+        // Display User Answer
         let displayValue = value;
         if (field.type === 'select') {
-            // Find label
             field.options.forEach(opt => {
                 if (opt === value) {
                     if (field.id === 'country') displayValue = i18n.t(`countries.${opt}`);
@@ -241,8 +276,15 @@ class ConversationalForm {
                 }
             });
         }
-
         this.addUserMessage(displayValue);
+
+        // TRANSITION LOGIC
+        // If we just got the name (student_name), we want a specific transition message before the next question.
+        if (field.id === 'student_name') {
+            const transitionMsg = i18n.t('form.lets_go').replace('{{name}}', value);
+            await this.addBotMessageWithDelay(transitionMsg, 600);
+        }
+
         this.currentStep++;
         this.askNextQuestion();
     }
