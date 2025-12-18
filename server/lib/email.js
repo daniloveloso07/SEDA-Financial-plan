@@ -223,12 +223,14 @@ export async function sendInternalEmail(application) {
   let priority = 'Medium';
   let priorityColor = '#E28E26'; // SEDA Secondary Yellow
 
-  if (application.guarantor_income && parseFloat(application.guarantor_income) > 0) {
+  const isFirstDegree = ['father', 'mother'].includes(application.guarantor_relationship);
+
+  if (isFirstDegree) {
+    priority = 'CRITICAL (Priority)';
+    priorityColor = '#d32f2f'; // Red for first degree
+  } else if (application.guarantor_income && parseFloat(application.guarantor_income) > 0) {
     priority = 'High';
     priorityColor = '#023A49'; // SEDA Dark Blue
-  } else if (application.student_income && parseFloat(application.student_income) > 0) {
-    priority = 'Medium';
-    priorityColor = '#E28E26'; // SEDA Secondary Yellow
   } else {
     priority = 'Medium';
     priorityColor = '#E28E26';

@@ -25,6 +25,39 @@ const CURRENCY_BY_COUNTRY = {
 };
 
 /**
+ * POST /api/applications/partial
+ * Save partial application progress for lead recovery
+ */
+router.post('/partial', async (req, res) => {
+    try {
+        const data = req.body;
+
+        // At minimum we need an email or phone
+        if (!data.student_email && !data.student_phone) {
+            return res.status(400).json({ success: false, message: 'Email or phone required for partial save' });
+        }
+
+        const applicationData = {
+            ...data,
+            status: 'ABANDONED_CART',
+            is_partial: true,
+            language: data.language || 'pt'
+        };
+
+        const result = await insertApplication(applicationData);
+
+        res.status(200).json({
+            success: true,
+            id: result.id,
+            message: 'Partial progress saved'
+        });
+    } catch (error) {
+        console.error('Partial save error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
  * POST /api/applications
  * Submit a new finance plan application
  */
@@ -123,13 +156,18 @@ router.post('/', async (req, res) => {
         // Classify application
         const status = classifyApplication({
             ...data,
-            ...financePlan
+            ...financePlan,
+            monthlyInstallment: financePlan.monthlyInstallment,
+            student_income_eur_est: studentFX.amountEUR,
+            guarantor_income_eur_est: guarantorFX.amountEUR
         });
 
         // Prepare application data for database
         const applicationData = {
+            id: data.id || null, // Include ID if updating a partial
             language: data.language,
             status,
+            is_partial: false, // Final submission is no longer partial
             ...financePlan,
             student_name: data.student_name,
             student_email: data.student_email,

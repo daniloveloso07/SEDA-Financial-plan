@@ -56,21 +56,26 @@ class ConversationalForm {
         this.messagesContainer = document.getElementById('chat-messages');
         this.inputArea = document.getElementById('chat-input-area');
         this.progressBar = document.getElementById('progress-fill');
-        this.guarantorIntroShown = false; // New flag for guarantor intro
+        this.guarantorIntroShown = false;
+        this.partialId = null;
 
         // Load calculator data
         const calcData = sessionStorage.getItem('seda_calculation');
         if (calcData) {
             this.calculatorData = JSON.parse(calcData);
         } else {
-            // Fallback default for direct chat access (Dev/MVP mode)
             this.calculatorData = {
                 campus: 'dublin',
-                course_type: 'general_english',
                 shift: 'am',
+                priceBase: 4400,
+                entryPercent: 0.30,
+                entryAmount: 1320.00,
                 installments: 12,
-                entry_percent: 0.30,
-                total_value_eur: 3000 // Dummy value just to pass checks
+                interestPercent: 1.5,
+                financedAmount: 3080.00,
+                totalFinanced: 3634.40,
+                monthlyInstallment: 302.87,
+                duration: 'long'
             };
         }
 
@@ -330,7 +335,39 @@ class ConversationalForm {
         }
 
         this.currentStep++;
+
+        // LEAD RECOVERY: Save progress after initial contact info
+        if (field.id === 'student_email' || field.id === 'student_phone') {
+            this.savePartialProgress();
+        }
+
         this.askNextQuestion();
+    }
+
+    async savePartialProgress() {
+        try {
+            const payload = {
+                id: this.partialId,
+                language: i18n.currentLanguage,
+                student_name: this.formData.student_name,
+                student_email: this.formData.student_email,
+                student_phone: this.formData.student_phone,
+                ...this.calculatorData
+            };
+
+            const response = await fetch('/api/applications/partial', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if (result.success && result.id) {
+                this.partialId = result.id;
+                console.log('Progress saved:', this.partialId);
+            }
+        } catch (error) {
+            console.warn('Partial save failed (normal for dev/slow net):', error);
+        }
     }
 
     // ... validation methods (same as before) ...
@@ -407,7 +444,10 @@ class ConversationalForm {
             const response = await fetch('/api/applications', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(applicationData)
+                body: JSON.stringify({
+                    ...applicationData,
+                    id: this.partialId // Crucial for upsert
+                })
             });
             const result = await response.json();
             if (response.ok) {

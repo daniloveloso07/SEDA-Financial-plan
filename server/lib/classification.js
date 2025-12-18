@@ -47,62 +47,55 @@ function isGuarantorComplete(data) {
  * OUT_OF_PROFILE if:
  * - Student age < 18
  * - Country not eligible
- * - Short duration selected
  * - Entry < 30%
  * - Missing mandatory guarantor data
+ * - Installment > 30% of combined income (Income Ratio Rule)
  * 
  * PRE_APPROVED_UNDER_REVIEW if:
- * - Age ≥ 18
- * - Eligible country
- * - Long duration
- * - Entry ≥ 30%
- * - Guarantor fully completed
- * - Student or guarantor income provided
+ * - Basic profile met
+ * - Income Ratio Rule satisfied (Installment <= 30% of income)
  * 
- * UNDER_ANALYSIS for all other valid edge cases
+ * UNDER_ANALYSIS for all other valid edge cases or if 30% rule is slightly breached.
  */
 export function classifyApplication(data) {
     const studentAge = calculateAge(data.student_birthdate);
-    const entryPercent = parseFloat(data.entryPercent || data.entry_percent || 0);
-    const country = data.country.toLowerCase();
-    const duration = data.duration || data.duration_choice;
+    const entryPercent = parseFloat(data.entryPercent || data.entry_percent || 0.30);
+    const country = (data.country || '').toLowerCase();
+    const duration = data.duration || data.duration_choice || 'long';
     const guarantorComplete = isGuarantorComplete(data);
-    const hasIncome = (data.student_income && parseFloat(data.student_income) > 0) ||
-        (data.guarantor_income && parseFloat(data.guarantor_income) > 0);
 
-    // OUT_OF_PROFILE conditions
-    if (studentAge < 18) {
+    // Incomes in EUR
+    const studentIncomeEUR = parseFloat(data.student_income_eur_est || 0);
+    const guarantorIncomeEUR = parseFloat(data.guarantor_income_eur_est || 0);
+    const combinedIncomeEUR = studentIncomeEUR + guarantorIncomeEUR;
+
+    const monthlyInstallment = parseFloat(data.monthlyInstallment || 0);
+
+    // Relationship status
+    const isFirstDegree = ['father', 'mother'].includes(data.guarantor_relationship);
+
+    // 1. Hard Stoppers (OUT_OF_PROFILE)
+    if (studentAge < 18) return 'OUT_OF_PROFILE';
+    if (!ELIGIBLE_COUNTRIES.includes(country)) return 'OUT_OF_PROFILE';
+    if (entryPercent < 0.29) return 'OUT_OF_PROFILE'; // Allow for slight rounding
+    if (!guarantorComplete) return 'OUT_OF_PROFILE';
+
+    // 2. Income Ratio Rule (The 30% Rule)
+    // If monthly installment is more than 30% of combined income
+    const incomeRatio = combinedIncomeEUR > 0 ? (monthlyInstallment / combinedIncomeEUR) : 999;
+
+    if (incomeRatio > 0.30) {
+        // If it's a first degree relative, we move to UNDER_ANALYSIS instead of rejection
+        if (isFirstDegree && incomeRatio <= 0.45) {
+            return 'UNDER_ANALYSIS';
+        }
         return 'OUT_OF_PROFILE';
     }
 
-    if (!ELIGIBLE_COUNTRIES.includes(country)) {
-        return 'OUT_OF_PROFILE';
-    }
-
-    if (duration === 'short') {
-        return 'OUT_OF_PROFILE';
-    }
-
-    if (entryPercent < 0.30) {
-        return 'OUT_OF_PROFILE';
-    }
-
-    if (!guarantorComplete) {
-        return 'OUT_OF_PROFILE';
-    }
-
-    // PRE_APPROVED_UNDER_REVIEW conditions
-    if (
-        studentAge >= 18 &&
-        ELIGIBLE_COUNTRIES.includes(country) &&
-        duration === 'long' &&
-        entryPercent >= 0.30 &&
-        guarantorComplete &&
-        hasIncome
-    ) {
+    // 3. Success Case
+    if (combinedIncomeEUR > 0) {
         return 'PRE_APPROVED_UNDER_REVIEW';
     }
 
-    // All other valid cases
     return 'UNDER_ANALYSIS';
 }
