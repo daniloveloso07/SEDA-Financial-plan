@@ -37,23 +37,15 @@ const FORM_FLOW = [
     { id: 'guarantor_income', type: 'number', section: 'guarantor', required: true, i18nKey: 'form.income' }
 ];
 
-class WizardForm {
+class ConversationalForm {
     constructor() {
         this.currentStep = 0;
         this.formData = {};
-
-        // UI Elements
-        this.card = document.getElementById('wizard-card');
-        this.questionContainer = document.getElementById('question-container');
-        this.inputContainer = document.getElementById('input-container');
+        this.messagesContainer = document.getElementById('chat-messages');
+        this.inputArea = document.getElementById('chat-input-area');
         this.progressBar = document.getElementById('progress-fill');
-        this.stepIndicator = document.getElementById('step-indicator');
-        this.backBtn = document.getElementById('back-btn');
 
-        // Bind events
-        this.backBtn.addEventListener('click', () => this.goBack());
-
-        // Load calculator data logic (same as before)
+        // Load calculator data
         const calcData = sessionStorage.getItem('seda_calculation');
         if (calcData) {
             this.calculatorData = JSON.parse(calcData);
@@ -63,10 +55,21 @@ class WizardForm {
     }
 
     init() {
-        this.renderStep();
+        this.showWelcomeMessage();
+        this.askNextQuestion();
     }
 
-    renderStep() {
+    showWelcomeMessage() {
+        const message = i18n.currentLanguage === 'en'
+            ? "Welcome! I'll help you apply for the SEDA Finance Plan. Let's start with some basic information."
+            : i18n.currentLanguage === 'pt'
+                ? "Bem-vindo! Vou ajudá-lo a se candidatar ao Plano de Financiamento SEDA. Vamos começar com algumas informações básicas."
+                : "¡Bienvenido! Te ayudaré a solicitar el Plan de Financiamiento SEDA. Comencemos con información básica.";
+
+        this.addBotMessage(message);
+    }
+
+    askNextQuestion() {
         if (this.currentStep >= FORM_FLOW.length) {
             this.showPrivacyConsent();
             return;
@@ -74,109 +77,149 @@ class WizardForm {
 
         const field = FORM_FLOW[this.currentStep];
 
-        // 1. Update Progress
+        // Section Headers
+        if (this.currentStep === 0 || (this.currentStep > 0 && FORM_FLOW[this.currentStep - 1].section !== field.section)) {
+            const sectionKey = field.section === 'student' ? 'form.student_section' : 'form.guarantor_section';
+            this.addBotMessage(`<strong>${i18n.t(sectionKey)}</strong>`);
+        }
+
+        const question = i18n.t(field.i18nKey);
+        this.addBotMessage(question);
+        this.showInput(field);
         this.updateProgress();
-
-        // 2. Render Question (Header)
-        // Check if we need to show section header? usually wizard just shows the question
-        // We can create a compound title if needed, but simple is better.
-        const questionText = i18n.t(field.i18nKey);
-        this.questionContainer.innerHTML = `<h2>${questionText}</h2>`;
-
-        // Show section name as subtitle?
-        // const sectionKey = field.section === 'student' ? 'form.student_section' : 'form.guarantor_section';
-        // this.stepIndicator.textContent = `${i18n.t(sectionKey)} • Step ${this.currentStep + 1}/${FORM_FLOW.length}`;
-        this.stepIndicator.textContent = `${this.currentStep + 1} / ${FORM_FLOW.length}`;
-
-        // 3. Render Input
-        this.inputContainer.innerHTML = ''; // Clear previous input
-        this.renderInputComponent(field);
-
-        // 4. Update Back Button visibility
-        this.backBtn.style.visibility = this.currentStep > 0 ? 'visible' : 'hidden';
     }
 
-    renderInputComponent(field) {
-        // Pre-fill value if exists
-        const currentValue = this.formData[field.id] || '';
+    showInput(field) {
+        this.inputArea.innerHTML = '';
+
+        // Container for Input + Back Button
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.gap = '10px';
+        container.style.width = '100%';
+        container.style.alignItems = 'flex-end';
+
+        // Back button (if not first step)
+        if (this.currentStep > 0) {
+            const backBtn = document.createElement('button');
+            backBtn.className = 'btn btn-outline back-btn';
+            backBtn.innerHTML = '⬅️';
+            backBtn.title = i18n.t('form.back') || 'Back';
+            backBtn.onclick = () => this.goBack();
+            container.appendChild(backBtn);
+        }
+
+        const inputWrapper = document.createElement('div');
+        inputWrapper.style.flex = '1';
 
         if (field.type === 'select') {
-            const optionsGroup = document.createElement('div');
-            optionsGroup.className = 'options-grid';
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'options-container';
 
             field.options.forEach(option => {
                 const btn = document.createElement('button');
-                btn.className = 'btn-option-large';
+                btn.className = 'btn btn-outline option-chip';
 
-                // Localization logic
                 let label = option;
                 if (field.id === 'country') label = i18n.t(`countries.${option}`);
                 else if (field.id === 'duration') label = i18n.t(`form.duration_${option}`);
                 else if (field.id === 'guarantor_relationship') label = i18n.t(`form.relationship_${option}`);
 
-                // Add text
-                const textSpan = document.createElement('span');
-                textSpan.textContent = label;
-                btn.appendChild(textSpan);
-
-                // Add arrow icon (→) for visual cue
-                const arrow = document.createElement('span');
-                arrow.innerHTML = 'Scan'; // Just a placeholder, CSS handles arrow if needed, or simple text
-                arrow.textContent = '›';
-                arrow.style.fontSize = '1.5rem';
-                arrow.style.color = 'var(--text-light)';
-                btn.appendChild(arrow);
-
-                // Selection state
-                if (currentValue === option) {
-                    btn.classList.add('selected');
-                }
-
+                btn.textContent = label;
                 btn.onclick = () => this.handleAnswer(option, field);
-                optionsGroup.appendChild(btn);
+                optionsContainer.appendChild(btn);
             });
-
-            this.inputContainer.appendChild(optionsGroup);
-
+            inputWrapper.appendChild(optionsContainer);
         } else {
-            // Text, Email, Date, Number
-            const wrapper = document.createElement('div');
-            wrapper.className = 'input-group-wizard';
-
             const input = document.createElement('input');
             input.type = field.type;
             input.className = 'form-input';
-            input.placeholder = i18n.t(field.i18nKey); // Use placeholder as hint
-            input.value = currentValue;
+            input.id = 'current-input';
+            input.placeholder = i18n.t(field.i18nKey) || 'Type your answer...';
 
             if (field.type === 'date') {
                 input.max = new Date().toISOString().split('T')[0];
             }
 
-            // Next Button
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'btn btn-primary btn-next-large';
-            nextBtn.textContent = i18n.t('form.next');
+            const sendBtn = document.createElement('button');
+            sendBtn.className = 'btn btn-primary';
+            sendBtn.innerHTML = '➤'; // Send icon
+            sendBtn.style.marginLeft = '10px';
+            sendBtn.style.padding = '0 1.5rem';
 
-            // Logic to handle Enter key and Click
             const submit = () => this.handleAnswer(input.value, field);
-
-            nextBtn.onclick = submit;
+            sendBtn.onclick = submit;
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') submit();
             });
 
-            wrapper.appendChild(input);
-            wrapper.appendChild(nextBtn);
-            this.inputContainer.appendChild(wrapper);
+            // Flex container for text input + send button
+            const textGroup = document.createElement('div');
+            textGroup.style.display = 'flex';
+            textGroup.style.width = '100%';
 
-            // Auto focus
+            textGroup.appendChild(input);
+            textGroup.appendChild(sendBtn);
+            inputWrapper.appendChild(textGroup);
+
             setTimeout(() => input.focus(), 50);
         }
+
+        container.appendChild(inputWrapper);
+        this.inputArea.appendChild(container);
+    }
+
+    goBack() {
+        if (this.currentStep === 0) return;
+
+        // Visual feedback: remove last 2 messages (Bot question + User answer)
+        // Note: Section headers are also messages, so we need be careful.
+        // Simple heuristic: Remove last user message, and any bot messages after it.
+
+        // Easier approach for now: Just remove the last 2 nodes.
+        // 1. Remove the current question (bot)
+        if (this.messagesContainer.lastChild) this.messagesContainer.lastChild.remove();
+
+        // 2. Remove the previous answer (user)
+        if (this.messagesContainer.lastChild && this.messagesContainer.lastChild.classList.contains('user')) {
+            this.messagesContainer.lastChild.remove();
+        }
+
+        // 3. Did we remove a section header? If the step before had a section header, it's still there.
+        // Actually, askNextQuestion adds the question. So removing the last node removes the question we just asked (that the user wants to leave).
+        // Then we need to remove the interaction *before* that, which is the user's answer to the *previous* question.
+
+        // Let's refine:
+        // Current state: User is at Step N. Bot just asked Question N.
+        // User clicks Back.
+        // We want to be at Step N-1.
+        // We need to remove: Question N (Bot) AND Answer N-1 (User).
+        // Then we call askNextQuestion() which re-asks Question N-1.
+
+        // Wait, if we just decrement and call askNextQuestion, it will add the question bubble AGAIN.
+        // So we need to remove the *original* Question N-1 bubble too?
+        // No, typically in chat, "Back" means "Undo last action". 
+        // Action 1: Bot asks Q1.
+        // Action 2: User answers A1.
+        // Action 3: Bot asks Q2.
+        // User clicks Back.
+        // Result: Remove Q2. Remove A1. Bot asks Q1 again.
+
+        // Implementation:
+        this.messagesContainer.lastChild?.remove(); // Remove Q2
+        this.messagesContainer.lastChild?.remove(); // Remove A1
+
+        // Edge case: Section headers. If Q2 also added a section header, we need to remove that too.
+        // We can check class list.
+        while (this.messagesContainer.lastChild && this.messagesContainer.lastChild.innerHTML.includes('<strong>')) {
+            this.messagesContainer.lastChild.remove();
+        }
+
+        this.currentStep--;
+        this.askNextQuestion();
     }
 
     handleAnswer(value, field) {
-        // Validate
         const validation = this.validateField(value, field);
         if (!validation.valid) {
             this.showError(validation.message);
@@ -184,18 +227,27 @@ class WizardForm {
         }
 
         this.formData[field.id] = value;
-        this.currentStep++;
-        this.renderStep();
-    }
 
-    goBack() {
-        if (this.currentStep > 0) {
-            this.currentStep--;
-            this.renderStep();
+        // Logic for display value (currency, date, map selection to text)
+        let displayValue = value;
+        if (field.type === 'select') {
+            // Find label
+            field.options.forEach(opt => {
+                if (opt === value) {
+                    if (field.id === 'country') displayValue = i18n.t(`countries.${opt}`);
+                    else if (field.id === 'duration') displayValue = i18n.t(`form.duration_${opt}`);
+                    else if (field.id === 'guarantor_relationship') displayValue = i18n.t(`form.relationship_${opt}`);
+                    else displayValue = opt;
+                }
+            });
         }
+
+        this.addUserMessage(displayValue);
+        this.currentStep++;
+        this.askNextQuestion();
     }
 
-    // ... validateField and showError methods remain mostly same ...
+    // ... validation methods (same as before) ...
     validateField(value, field) {
         if (field.required && !value) {
             return { valid: false, message: i18n.t('form.validation_required') };
@@ -225,23 +277,99 @@ class WizardForm {
         if (field.id === 'guarantor_id' && value && value === this.formData.student_id) {
             return { valid: false, message: i18n.currentLanguage === 'pt' ? 'ID do fiador deve ser diferente' : 'Guarantor ID must be different' };
         }
-
         return { valid: true };
     }
 
     showError(message) {
-        // Remove existing error
-        const existingError = this.card.querySelector('.form-error');
-        if (existingError) existingError.remove();
-
+        // ... same ...
         const errorDiv = document.createElement('div');
         errorDiv.className = 'form-error';
         errorDiv.textContent = message;
-        errorDiv.style.marginTop = '1rem';
-        errorDiv.style.textAlign = 'center';
-        this.inputContainer.appendChild(errorDiv);
-
+        this.inputArea.appendChild(errorDiv);
         setTimeout(() => errorDiv.remove(), 3000);
+    }
+
+    showPrivacyConsent() {
+        const message = i18n.t('form.privacy_notice');
+        this.addBotMessage(message);
+
+        this.inputArea.innerHTML = '';
+        const wrapper = document.createElement('div');
+        wrapper.style.textAlign = 'center';
+        wrapper.style.width = '100%';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = 'privacy-consent';
+        checkbox.style.marginRight = '10px';
+
+        const label = document.createElement('label');
+        label.htmlFor = 'privacy-consent';
+        label.textContent = i18n.t('form.privacy_notice_short') || "I agree";
+
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.textContent = i18n.t('form.submit');
+        btn.disabled = true;
+        btn.style.marginTop = '10px';
+        btn.style.width = '100%';
+
+        checkbox.addEventListener('change', () => btn.disabled = !checkbox.checked);
+        btn.onclick = () => this.submitApplication(btn);
+
+        wrapper.appendChild(checkbox);
+        wrapper.appendChild(label);
+        wrapper.appendChild(document.createElement('br'));
+        wrapper.appendChild(btn);
+
+        this.inputArea.appendChild(wrapper);
+    }
+
+    async submitApplication(btn) {
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
+
+        // ... same submission logic ...
+        try {
+            const applicationData = {
+                language: i18n.currentLanguage,
+                ...this.formData,
+                ...this.calculatorData
+            };
+            const response = await fetch('/api/applications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(applicationData)
+            });
+            const result = await response.json();
+            if (response.ok) {
+                sessionStorage.setItem('seda_application_result', JSON.stringify(result));
+                window.location.href = '/result.html';
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            console.error(error);
+            this.showError(error.message || 'Error');
+            btn.disabled = false;
+            btn.textContent = i18n.t('form.submit');
+        }
+    }
+
+    addBotMessage(text) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message bot';
+        messageDiv.innerHTML = `<div class="message-bubble">${text}</div>`;
+        this.messagesContainer.appendChild(messageDiv);
+        this.scrollToBottom();
+    }
+
+    addUserMessage(text) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message user';
+        messageDiv.innerHTML = `<div class="message-bubble">${text}</div>`;
+        this.messagesContainer.appendChild(messageDiv);
+        this.scrollToBottom();
     }
 
     updateProgress() {
@@ -249,91 +377,13 @@ class WizardForm {
         this.progressBar.style.width = `${progress}%`;
     }
 
-    showPrivacyConsent() {
-        this.updateProgress();
-        this.stepIndicator.textContent = 'Review';
-        this.questionContainer.innerHTML = `<h2>${i18n.t('form.privacy_notice')}</h2>`;
-        this.backBtn.style.visibility = 'visible';
-
-        this.inputContainer.innerHTML = '';
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'input-group-wizard';
-        wrapper.style.alignItems = 'center'; // Center checkbox
-
-        const checkboxContainer = document.createElement('div');
-        checkboxContainer.style.display = 'flex';
-        checkboxContainer.style.gap = '10px';
-        checkboxContainer.style.alignItems = 'center';
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = 'privacy-consent';
-        checkbox.style.width = '20px';
-        checkbox.style.height = '20px';
-
-        const label = document.createElement('label');
-        label.htmlFor = 'privacy-consent';
-        label.textContent = i18n.t('form.privacy_notice_short') || "I agree to the processing of my personal data";
-        label.style.cursor = 'pointer';
-
-        checkboxContainer.appendChild(checkbox);
-        checkboxContainer.appendChild(label);
-
-        const submitBtn = document.createElement('button');
-        submitBtn.className = 'btn btn-primary btn-next-large';
-        submitBtn.textContent = i18n.t('form.submit');
-        submitBtn.disabled = true;
-        submitBtn.style.width = '100%';
-
-        checkbox.addEventListener('change', () => {
-            submitBtn.disabled = !checkbox.checked;
-        });
-
-        submitBtn.addEventListener('click', () => this.submitApplication(submitBtn));
-
-        wrapper.appendChild(checkboxContainer);
-        wrapper.appendChild(submitBtn);
-        this.inputContainer.appendChild(wrapper);
-    }
-
-    async submitApplication(btnElement) {
-        btnElement.disabled = true;
-        btnElement.textContent = 'Submitting...';
-
-        // ... (submission logic similar to before) ...
-        try {
-            const applicationData = {
-                language: i18n.currentLanguage,
-                ...this.formData,
-                ...this.calculatorData
-            };
-
-            const response = await fetch('/api/applications', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(applicationData)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                sessionStorage.setItem('seda_application_result', JSON.stringify(result));
-                window.location.href = '/result.html'; // Redirect
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error) {
-            console.error('Submission error:', error);
-            this.showError(error.message || 'Submission failed');
-            btnElement.disabled = false;
-            btnElement.textContent = i18n.t('form.submit');
-        }
+    scrollToBottom() {
+        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('wizard-card')) {
-        new WizardForm();
+    if (document.getElementById('chat-messages')) {
+        new ConversationalForm();
     }
 });
