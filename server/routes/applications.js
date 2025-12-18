@@ -25,45 +25,6 @@ const CURRENCY_BY_COUNTRY = {
 };
 
 /**
- * GET /api/applications/test-email
- * Temporary debug endpoint to verify Resend API connection
- */
-router.get('/test-email', async (req, res) => {
-    try {
-        const testData = {
-            student_name: 'Test User',
-            student_email: process.env.FROM_EMAIL,
-            id: 'TEST-' + Math.floor(Math.random() * 1000),
-            status: 'PRE_APPROVED_UNDER_REVIEW',
-            priceBase: '2,950',
-            entryAmount: '885',
-            financedAmount: '2,065',
-            installments: 12,
-            monthlyInstallment: '180.54'
-        };
-
-        console.log('Testing Resend API with FROM_EMAIL:', process.env.FROM_EMAIL);
-
-        await sendApplicantEmail(testData, 'en');
-
-        res.status(200).json({
-            success: true,
-            message: 'Resend API Test Successful! Check your inbox.',
-            apiKeyDetected: !!process.env.SMTP_PASS,
-            from: process.env.FROM_EMAIL
-        });
-
-    } catch (error) {
-        console.error('❌ Resend API Test Failed:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Resend API Test Failed',
-            error_message: error.message
-        });
-    }
-});
-
-/**
  * POST /api/applications
  * Submit a new finance plan application
  */
