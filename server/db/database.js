@@ -93,12 +93,50 @@ CREATE TABLE IF NOT EXISTS finance_applications (
 
 // Initialize database
 export async function initializeDatabase() {
+  const client = await pool.connect();
   try {
-    await pool.query(CREATE_TABLE_SQL);
-    console.log('✅ Database initialized successfully');
+    console.log('[DB] Running initialization and migrations...');
+
+    // 1. Ensure table exists
+    await client.query(CREATE_TABLE_SQL);
+
+    // 2. Run Migrations (Add columns if missing)
+    await client.query(`
+      ALTER TABLE finance_applications 
+      ADD COLUMN IF NOT EXISTS is_partial BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    `);
+
+    // 3. Relax NOT NULL constraints for lead recovery
+    const columnsToRelax = [
+      'campus', 'shift', 'price_base', 'entry_percent', 'entry_amount',
+      'installments', 'interest_percent', 'financed_amount', 'total_financed',
+      'monthly_installment', 'student_name', 'student_phone', 'student_birthdate',
+      'student_id', 'student_address', 'student_postal', 'student_occupation',
+      'travel_date', 'country', 'duration_choice', 'guarantor_name',
+      'guarantor_email', 'guarantor_phone', 'guarantor_birthdate',
+      'guarantor_id', 'guarantor_address', 'guarantor_postal',
+      'guarantor_occupation', 'guarantor_relationship'
+    ];
+
+    for (const col of columnsToRelax) {
+      // Check if column exists before trying to alter (to avoid errors on non-existent columns)
+      await client.query(`
+        DO $$ 
+        BEGIN 
+          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='finance_applications' AND column_name='${col}') THEN
+            ALTER TABLE finance_applications ALTER COLUMN ${col} DROP NOT NULL;
+          END IF;
+        END $$;
+      `);
+    }
+
+    console.log('✅ Database initialized and migrated successfully');
   } catch (error) {
-    console.error('❌ Database initialization error:', error);
+    console.error('❌ Database initialization/migration error:', error);
     throw error;
+  } finally {
+    client.release();
   }
 }
 
