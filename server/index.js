@@ -67,14 +67,21 @@ app.use((err, req, res, next) => {
 
 // Start server
 const startServer = async () => {
+    console.log('🚀 Starting server initialization...');
+    console.log(`📌 Environment: ${process.env.NODE_ENV}`);
+    console.log(`📌 Port: ${PORT}`);
+
     try {
+        console.log('⏳ Initializing database connection...');
         await initializeDatabase();
-        app.listen(PORT, () => {
-            console.log(`✅ SEDA Finance Plan server running on http://localhost:${PORT}`);
-            console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log('✅ Database initialization completed.');
+
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`\n🚀 Server is running on port ${PORT}`);
+            console.log(`🔗 Healthcheck available at http://0.0.0.0:${PORT}/\n`);
         });
     } catch (error) {
-        console.error('❌ Failed to start server due to database error:', error);
+        console.error('❌ Failed to start server:', error);
         process.exit(1);
     }
 };

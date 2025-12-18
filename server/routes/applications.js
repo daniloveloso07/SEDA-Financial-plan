@@ -74,19 +74,25 @@ router.post('/', async (req, res) => {
         let guarantorFX = { amountEUR: null };
         let fxMetadata = { rate: null, date: null };
 
-        if (data.student_income) {
-            studentFX = await convertToEUR(parseFloat(data.student_income), currencyCode);
-            fxMetadata.rate = studentFX.rate;
-            fxMetadata.date = studentFX.date;
-        }
-
-        if (data.guarantor_income) {
-            guarantorFX = await convertToEUR(parseFloat(data.guarantor_income), currencyCode);
-            // Use guarantor FX if student FX failed or wasn't provided
-            if (!fxMetadata.rate) {
-                fxMetadata.rate = guarantorFX.rate;
-                fxMetadata.date = guarantorFX.date;
+        // FX Conversion with fallback
+        try {
+            if (data.student_income) {
+                studentFX = await convertToEUR(parseFloat(data.student_income), currencyCode);
+                fxMetadata.rate = studentFX.rate;
+                fxMetadata.date = studentFX.date;
             }
+
+            if (data.guarantor_income) {
+                guarantorFX = await convertToEUR(parseFloat(data.guarantor_income), currencyCode);
+                // Use guarantor FX if student FX failed or wasn't provided
+                if (!fxMetadata.rate) {
+                    fxMetadata.rate = guarantorFX.rate;
+                    fxMetadata.date = guarantorFX.date;
+                }
+            }
+        } catch (fxError) {
+            console.warn('⚠️ FX Service failed (continuing without FX data):', fxError.message);
+            // Application proceeds without FX data
         }
 
         // Classify application

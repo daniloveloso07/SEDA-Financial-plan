@@ -19,7 +19,16 @@ if (process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: isProduction ? { rejectUnauthorized: false } : false
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
+  connectionTimeoutMillis: 5000 // Timeout after 5 seconds to debug hangs
+});
+
+pool.on('connect', () => {
+  console.log('[DB] Pool connected to PostgreSQL');
+});
+
+pool.on('error', (err) => {
+  console.error('[DB] Unexpected error on idle client', err);
 });
 
 // Database schema
@@ -53,7 +62,7 @@ CREATE TABLE IF NOT EXISTS finance_applications (
   student_address TEXT NOT NULL,
   student_postal VARCHAR(50) NOT NULL,
   student_occupation VARCHAR(255) NOT NULL,
-  student_income DECIMAL(10, 2),
+  student_income DECIMAL(15, 2),
   student_income_currency VARCHAR(10),
   student_income_eur_est DECIMAL(10, 2),
   travel_date DATE NOT NULL,
@@ -70,7 +79,7 @@ CREATE TABLE IF NOT EXISTS finance_applications (
   guarantor_postal VARCHAR(50) NOT NULL,
   guarantor_occupation VARCHAR(255) NOT NULL,
   guarantor_relationship VARCHAR(50) NOT NULL,
-  guarantor_income DECIMAL(10, 2),
+  guarantor_income DECIMAL(15, 2),
   guarantor_income_currency VARCHAR(10),
   guarantor_income_eur_est DECIMAL(10, 2),
   

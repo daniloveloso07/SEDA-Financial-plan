@@ -652,3 +652,38 @@ a:hover {
   opacity: 0.6;
   pointer-events: none;
 }
+/* Interactive Form Options */
+.options-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.option-chip {
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    flex-grow: 1;
+    text-align: center;
+}
+
+.option-chip:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.back-btn {
+    padding: 0 1rem;
+    height: 48px; /* Match input height */
+    border-radius: 8px;
+    font-size: 1.2rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+}

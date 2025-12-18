@@ -91,40 +91,47 @@ class ConversationalForm {
 
     showInput(field) {
         this.inputArea.innerHTML = '';
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.gap = '10px';
+        container.style.width = '100%';
+        container.style.alignItems = 'flex-start'; // Align items to top
+
+        // Back button (if not first step)
+        if (this.currentStep > 0) {
+            const backBtn = document.createElement('button');
+            backBtn.className = 'btn btn-outline back-btn';
+            backBtn.innerHTML = '←'; // Or use an icon class if available
+            backBtn.title = i18n.t('form.back') || 'Back';
+            backBtn.onclick = () => this.goBack();
+            container.appendChild(backBtn);
+        }
+
+        const inputWrapper = document.createElement('div');
+        inputWrapper.style.flex = '1';
 
         if (field.type === 'select') {
-            const select = document.createElement('select');
-            select.className = 'form-select';
-            select.id = 'current-input';
-
-            const placeholder = document.createElement('option');
-            placeholder.value = '';
-            placeholder.textContent = i18n.t('form.next');
-            select.appendChild(placeholder);
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'options-container';
 
             field.options.forEach(option => {
-                const opt = document.createElement('option');
-                opt.value = option;
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-outline option-chip';
 
                 if (field.id === 'country') {
-                    opt.textContent = i18n.t(`countries.${option}`);
+                    btn.textContent = i18n.t(`countries.${option}`);
                 } else if (field.id === 'duration') {
-                    opt.textContent = i18n.t(`form.duration_${option}`);
+                    btn.textContent = i18n.t(`form.duration_${option}`);
                 } else if (field.id === 'guarantor_relationship') {
-                    opt.textContent = i18n.t(`form.relationship_${option}`);
+                    btn.textContent = i18n.t(`form.relationship_${option}`);
+                } else {
+                    btn.textContent = option;
                 }
 
-                select.appendChild(opt);
+                btn.onclick = () => this.handleAnswer(option, field);
+                optionsContainer.appendChild(btn);
             });
-
-            select.addEventListener('change', () => {
-                if (select.value) {
-                    this.handleAnswer(select.value, field);
-                }
-            });
-
-            this.inputArea.appendChild(select);
-            select.focus();
+            inputWrapper.appendChild(optionsContainer);
         } else {
             const input = document.createElement('input');
             input.type = field.type;
@@ -136,14 +143,13 @@ class ConversationalForm {
                 input.max = new Date().toISOString().split('T')[0];
             }
 
-            const button = document.createElement('button');
-            button.className = 'btn btn-primary';
-            button.textContent = i18n.t('form.next');
-            button.style.marginLeft = '1rem';
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'btn btn-primary';
+            nextBtn.textContent = i18n.t('form.next');
+            nextBtn.style.marginTop = '10px';
+            nextBtn.style.width = '100%'; // Mobile friendly
 
-            button.addEventListener('click', () => {
-                this.handleAnswer(input.value, field);
-            });
+            nextBtn.onclick = () => this.handleAnswer(input.value, field);
 
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
@@ -151,10 +157,32 @@ class ConversationalForm {
                 }
             });
 
-            this.inputArea.appendChild(input);
-            this.inputArea.appendChild(button);
-            input.focus();
+            inputWrapper.appendChild(input);
+            inputWrapper.appendChild(nextBtn);
+
+            // Auto-focus after a slight delay to ensure render
+            setTimeout(() => input.focus(), 50);
         }
+
+        container.appendChild(inputWrapper);
+        this.inputArea.appendChild(container);
+    }
+
+    goBack() {
+        if (this.currentStep === 0) return;
+
+        // Remove current question (last bubble)
+        if (this.messagesContainer.lastChild) {
+            this.messagesContainer.removeChild(this.messagesContainer.lastChild);
+        }
+
+        // Remove previous answer (second to last bubble now last)
+        if (this.messagesContainer.lastChild) {
+            this.messagesContainer.removeChild(this.messagesContainer.lastChild);
+        }
+
+        this.currentStep--;
+        this.showInput(FORM_FLOW[this.currentStep]);
     }
 
     handleAnswer(value, field) {
