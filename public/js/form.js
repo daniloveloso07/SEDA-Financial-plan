@@ -11,30 +11,39 @@ const ELIGIBLE_COUNTRIES = [
 // Form flow configuration
 const FORM_FLOW = [
     // Student Information
-    { id: 'student_name', type: 'text', section: 'student', required: true, i18nKey: 'form.full_name' },
-    { id: 'student_email', type: 'email', section: 'student', required: true, i18nKey: 'form.email' },
-    { id: 'student_phone', type: 'tel', section: 'student', required: true, i18nKey: 'form.phone' },
-    { id: 'student_birthdate', type: 'date', section: 'student', required: true, i18nKey: 'form.birthdate' },
-    { id: 'student_id', type: 'text', section: 'student', required: true, i18nKey: 'form.id_number' },
-    { id: 'country', type: 'select', section: 'student', required: true, i18nKey: 'form.country', options: ELIGIBLE_COUNTRIES },
-    { id: 'student_address', type: 'text', section: 'student', required: true, i18nKey: 'form.address' },
-    { id: 'student_postal', type: 'text', section: 'student', required: true, i18nKey: 'form.postal_code' },
-    { id: 'student_occupation', type: 'text', section: 'student', required: true, i18nKey: 'form.occupation' },
-    { id: 'student_income', type: 'number', section: 'student', required: true, i18nKey: 'form.income' },
-    { id: 'travel_date', type: 'date', section: 'student', required: true, i18nKey: 'form.travel_date' },
-    { id: 'duration', type: 'select', section: 'student', required: true, i18nKey: 'form.duration', options: ['long'] },
+    { id: 'student_name', type: 'text', section: 'student', required: true, i18nKey: 'form.name_question' },
+    { id: 'student_phone', type: 'tel', section: 'student', required: true, i18nKey: 'form.phone_question' },
+    { id: 'student_email', type: 'email', section: 'student', required: true, i18nKey: 'form.email_question' },
+    { id: 'student_birthdate', type: 'date', section: 'student', required: true, i18nKey: 'form.birthdate_question' },
+    { id: 'student_id', type: 'text', section: 'student', required: true, i18nKey: 'form.id_question' },
+    { id: 'country', type: 'select', section: 'student', required: true, i18nKey: 'form.country_question', options: ELIGIBLE_COUNTRIES },
+
+    // Split Address
+    { id: 'student_street', type: 'text', section: 'student', required: true, i18nKey: 'form.address_street_question' },
+    { id: 'student_city', type: 'text', section: 'student', required: true, i18nKey: 'form.address_city_question' },
+    { id: 'student_state', type: 'text', section: 'student', required: true, i18nKey: 'form.address_state_question' },
+    { id: 'student_postal', type: 'text', section: 'student', required: true, i18nKey: 'form.address_postal_question' },
+
+    { id: 'student_occupation', type: 'text', section: 'student', required: true, i18nKey: 'form.occupation_question' },
+    { id: 'student_income', type: 'number', section: 'student', required: true, i18nKey: 'form.income_question' },
+    { id: 'travel_date', type: 'date', section: 'student', required: true, i18nKey: 'form.travel_date_question' },
+
+    // Duration hidden/skipped via logic or just removed if hardcoded 'long'. 
+    // We will inject 'long' automatically in submission.
 
     // Guarantor Information
-    { id: 'guarantor_name', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.full_name' },
-    { id: 'guarantor_email', type: 'email', section: 'guarantor', required: true, i18nKey: 'form.email' },
-    { id: 'guarantor_phone', type: 'tel', section: 'guarantor', required: true, i18nKey: 'form.phone' },
-    { id: 'guarantor_birthdate', type: 'date', section: 'guarantor', required: true, i18nKey: 'form.birthdate' },
-    { id: 'guarantor_id', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.id_number' },
-    { id: 'guarantor_address', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.address' },
-    { id: 'guarantor_postal', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.postal_code' },
-    { id: 'guarantor_occupation', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.occupation' },
-    { id: 'guarantor_relationship', type: 'select', section: 'guarantor', required: true, i18nKey: 'form.relationship', options: ['father', 'mother', 'grandfather', 'grandmother', 'brother', 'sister', 'uncle_aunt', 'spouse', 'other'] },
-    { id: 'guarantor_income', type: 'number', section: 'guarantor', required: true, i18nKey: 'form.income' }
+    { id: 'guarantor_name', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_name_question' },
+    { id: 'guarantor_email', type: 'email', section: 'guarantor', required: true, i18nKey: 'form.guarantor_email_question' },
+    { id: 'guarantor_phone', type: 'tel', section: 'guarantor', required: true, i18nKey: 'form.guarantor_phone_question' },
+    { id: 'guarantor_birthdate', type: 'date', section: 'guarantor', required: true, i18nKey: 'form.guarantor_birthdate_question' },
+    { id: 'guarantor_id', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_id_question' },
+
+    { id: 'guarantor_street', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_address_question' },
+    { id: 'guarantor_postal', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_postal_question' },
+
+    { id: 'guarantor_occupation', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_occupation_question' },
+    { id: 'guarantor_relationship', type: 'select', section: 'guarantor', required: true, i18nKey: 'form.guarantor_relationship_question', options: ['father', 'mother', 'grandfather', 'grandmother', 'brother', 'sister', 'uncle_aunt', 'spouse', 'other'] },
+    { id: 'guarantor_income', type: 'number', section: 'guarantor', required: true, i18nKey: 'form.guarantor_income_question' }
 ];
 
 class ConversationalForm {
@@ -44,6 +53,7 @@ class ConversationalForm {
         this.messagesContainer = document.getElementById('chat-messages');
         this.inputArea = document.getElementById('chat-input-area');
         this.progressBar = document.getElementById('progress-fill');
+        this.guarantorIntroShown = false; // New flag for guarantor intro
 
         // Load calculator data
         const calcData = sessionStorage.getItem('seda_calculation');
@@ -68,8 +78,12 @@ class ConversationalForm {
             'welcome_4'
         ];
 
+        // Slight delay between welcome messages
         for (const key of messages) {
-            await this.addBotMessageWithDelay(i18n.t(`form.${key}`), 800);
+            const text = i18n.t(`form.${key}`);
+            // If the text contains newlines, we can format it? The CSS handles wrapping.
+            // We'll leave it simple.
+            await this.addBotMessageWithDelay(text, 1200);
         }
 
         // Show Start Button
@@ -83,7 +97,6 @@ class ConversationalForm {
         btn.textContent = i18n.t('form.start_btn');
         btn.style.width = '100%';
         btn.style.padding = '1rem';
-        btn.style.fontSize = '1.1rem';
 
         btn.onclick = () => {
             // User "says" Start
@@ -104,18 +117,19 @@ class ConversationalForm {
 
         const field = FORM_FLOW[this.currentStep];
 
+        // Guarantor Intro Message Check
+        if (field.id === 'guarantor_name' && !this.guarantorIntroShown) {
+            await this.addBotMessageWithDelay(i18n.t('form.guarantor_intro'), 1000);
+            this.guarantorIntroShown = true;
+        }
+
         // determine the question text
         let questionText = i18n.t(field.i18nKey);
 
-        // Special Overrides for "Humanized" flow
+        // Dynamic overrides if needed
         if (field.id === 'student_name') {
-            questionText = i18n.t('form.name_question');
-        }
-        else if (field.id === 'student_email') {
-            // Example: "Cool! Now give me your email..."
-            // For now we stick to standard or add more keys later if requested.
-            // We can say "Thanks, {name}..." if we want.
-            // But the user specifically asked for Name -> Phone transition.
+            // ensure using the new conversational key if not already in FORM_FLOW
+            // (It is in FORM_FLOW)
         }
 
         // Add delay for realism
@@ -146,7 +160,7 @@ class ConversationalForm {
         const typingDiv = document.createElement('div');
         typingDiv.id = 'typing-indicator';
         typingDiv.className = 'chat-message bot typing';
-        typingDiv.innerHTML = '<div class="message-bubble">...</div>';
+        typingDiv.innerHTML = '<div class="message-bubble"></div>'; // CSS handles pseudo-element
         this.messagesContainer.appendChild(typingDiv);
         this.scrollToBottom();
     }
@@ -189,8 +203,7 @@ class ConversationalForm {
 
                 let label = option;
                 if (field.id === 'country') label = i18n.t(`countries.${option}`);
-                else if (field.id === 'duration') label = i18n.t(`form.duration_${option}`);
-                else if (field.id === 'guarantor_relationship') label = i18n.t(`form.relationship_${option}`);
+                else if (field.id === 'guarantor_relationship') label = i18n.t(`form.relationship_${option}`); // fixed key path
 
                 btn.textContent = label;
                 btn.onclick = () => this.handleAnswer(option, field);
@@ -199,10 +212,18 @@ class ConversationalForm {
             inputWrapper.appendChild(optionsContainer);
         } else {
             const input = document.createElement('input');
-            input.type = field.type;
+            input.type = field.type === 'number' ? 'text' : field.type; // Use text for number to allow formatting if needed
+            if (field.type === 'number') input.inputMode = 'numeric';
+
             input.className = 'form-input';
-            input.id = 'current-input';
-            input.placeholder = i18n.t(field.i18nKey) || 'Type your answer...';
+
+            // Placeholder logic
+            if (field.id === 'student_phone' || field.id === 'guarantor_phone') {
+                input.placeholder = '+55 11 99999-9999';
+            } else if (field.type === 'date') {
+                input.placeholder = 'DD/MM/YYYY';
+                // For layout purposes. Actual type=date handles format in browser usually.
+            }
 
             if (field.type === 'date') {
                 input.max = new Date().toISOString().split('T')[0];
@@ -211,7 +232,7 @@ class ConversationalForm {
             const sendBtn = document.createElement('button');
             sendBtn.className = 'btn btn-primary';
             sendBtn.innerHTML = '➤'; // Send icon
-            sendBtn.style.marginLeft = '10px';
+            sendBtn.style.marginLeft = '0.5rem';
             sendBtn.style.padding = '0 1.5rem';
 
             const submit = () => this.handleAnswer(input.value, field);
@@ -239,23 +260,19 @@ class ConversationalForm {
     goBack() {
         if (this.currentStep === 0) return;
 
-        // Try to remove the last question group (Question + Answer + potential transitions)
-        // This is a bit tricky with dynamic transitions, but removing the last few nodes usually works for visual reset.
-        // We'll trust the user to re-read context if needed.
+        // Remove last Q and A
+        this.messagesContainer.lastChild?.remove();
+        this.messagesContainer.lastChild?.remove();
 
-        let removeCount = 2; // Default: Bot Q + User A
-        // If we had a transition message, it might be 3 nodes.
-
-        while (removeCount > 0 && this.messagesContainer.lastChild) {
-            this.messagesContainer.lastChild.remove();
-            removeCount--;
-        }
+        // If we just showed the guarantor intro, we might need to remove that too? 
+        // Or cleaner: just re-ask the previous question.
 
         this.currentStep--;
         this.askNextQuestion();
     }
 
     async handleAnswer(value, field) {
+        // Basic Validation
         const validation = this.validateField(value, field);
         if (!validation.valid) {
             this.showError(validation.message);
@@ -264,25 +281,39 @@ class ConversationalForm {
 
         this.formData[field.id] = value;
 
-        // Display User Answer
+        // FORMATTING FOR DISPLAY (Chat Bubbles)
         let displayValue = value;
-        if (field.type === 'select') {
+
+        if (field.type === 'date') {
+            // Convert YYYY-MM-DD to DD/MM/YYYY
+            if (value && value.includes('-')) {
+                const [y, m, d] = value.split('-');
+                displayValue = `${d}/${m}/${y}`;
+            }
+        }
+        else if (field.type === 'number' && (field.id.includes('income'))) {
+            // Curreny Format
+            displayValue = new Intl.NumberFormat(i18n.currentLanguage === 'pt' ? 'pt-BR' : 'en-IE', {
+                style: 'currency',
+                currency: i18n.currentLanguage === 'pt' ? 'BRL' : 'EUR'
+            }).format(value);
+        }
+        else if (field.type === 'select') {
             field.options.forEach(opt => {
                 if (opt === value) {
                     if (field.id === 'country') displayValue = i18n.t(`countries.${opt}`);
-                    else if (field.id === 'duration') displayValue = i18n.t(`form.duration_${opt}`);
-                    else if (field.id === 'guarantor_relationship') displayValue = i18n.t(`form.relationship_${opt}`);
+                    else if (field.id === 'guarantor_relationship') displayValue = i18n.t(`form.relationship_${opt}`); // fixed key path
                     else displayValue = opt;
                 }
             });
         }
+
         this.addUserMessage(displayValue);
 
-        // TRANSITION LOGIC
-        // If we just got the name (student_name), we want a specific transition message before the next question.
+        // Transition Logic
         if (field.id === 'student_name') {
             const transitionMsg = i18n.t('form.lets_go').replace('{{name}}', value);
-            await this.addBotMessageWithDelay(transitionMsg, 600);
+            await this.addBotMessageWithDelay(transitionMsg, 800);
         }
 
         this.currentStep++;
@@ -294,31 +325,7 @@ class ConversationalForm {
         if (field.required && !value) {
             return { valid: false, message: i18n.t('form.validation_required') };
         }
-        if (field.type === 'email' && value) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(value)) return { valid: false, message: i18n.t('form.validation_email') };
-        }
-        if (field.type === 'tel' && value) {
-            const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-            if (!phoneRegex.test(value.replace(/[\s-]/g, ''))) return { valid: false, message: i18n.t('form.validation_phone') };
-        }
-        if (field.id === 'student_birthdate' && value) {
-            const birthDate = new Date(value);
-            const age = (new Date() - birthDate) / (1000 * 60 * 60 * 24 * 365);
-            if (age < 18) return { valid: false, message: i18n.t('form.validation_age') };
-        }
-        // Guarantor validations
-        if (field.id === 'guarantor_email' && value && value.toLowerCase() === this.formData.student_email?.toLowerCase()) {
-            return { valid: false, message: i18n.currentLanguage === 'pt' ? 'Email do fiador deve ser diferente' : 'Guarantor email must be different' };
-        }
-        if (field.id === 'guarantor_phone' && value) {
-            const normalizedValue = value.replace(/[\s-]/g, '');
-            const normalizedStudent = this.formData.student_phone?.replace(/[\s-]/g, '');
-            if (normalizedValue === normalizedStudent) return { valid: false, message: i18n.currentLanguage === 'pt' ? 'Telefone do fiador deve ser diferente' : 'Guarantor phone must be different' };
-        }
-        if (field.id === 'guarantor_id' && value && value === this.formData.student_id) {
-            return { valid: false, message: i18n.currentLanguage === 'pt' ? 'ID do fiador deve ser diferente' : 'Guarantor ID must be different' };
-        }
+        // Specific validations removed as per instruction, keeping only required check.
         return { valid: true };
     }
 
@@ -332,7 +339,7 @@ class ConversationalForm {
     }
 
     showPrivacyConsent() {
-        const message = i18n.t('form.privacy_notice');
+        const message = i18n.t('form.privacy_consent_question');
         this.addBotMessage(message);
 
         this.inputArea.innerHTML = '';
@@ -340,38 +347,42 @@ class ConversationalForm {
         wrapper.style.textAlign = 'center';
         wrapper.style.width = '100%';
 
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = 'privacy-consent';
-        checkbox.style.marginRight = '10px';
-
-        const label = document.createElement('label');
-        label.htmlFor = 'privacy-consent';
-        label.textContent = i18n.t('form.privacy_notice_short') || "I agree";
-
         const btn = document.createElement('button');
         btn.className = 'btn btn-primary';
-        btn.textContent = i18n.t('form.submit');
-        btn.disabled = true;
-        btn.style.marginTop = '10px';
+        btn.textContent = i18n.t('form.privacy_agree_btn');
         btn.style.width = '100%';
+        btn.style.marginTop = '10px';
+        btn.style.padding = '1rem';
 
-        checkbox.addEventListener('change', () => btn.disabled = !checkbox.checked);
         btn.onclick = () => this.submitApplication(btn);
 
-        wrapper.appendChild(checkbox);
-        wrapper.appendChild(label);
-        wrapper.appendChild(document.createElement('br'));
         wrapper.appendChild(btn);
-
         this.inputArea.appendChild(wrapper);
     }
 
     async submitApplication(btn) {
         btn.disabled = true;
-        btn.textContent = 'Submitting...';
+        btn.textContent = '...';
 
-        // ... same submission logic ...
+        // CONSTRUCT FINAL PAYLOAD
+        // We need to merge street/city/state into 'address'
+
+        const street = this.formData.student_street || '';
+        const city = this.formData.student_city || '';
+        const state = this.formData.student_state || '';
+
+        // DB expects 'address' field
+        this.formData.student_address = `${street}, ${city}, ${state}`.replace(/^, /, '').replace(/, $/, '');
+
+        // Same for Guarantor
+        // Note: We didn't ask separate city/state for guarantor in this flow update per script?
+        // "E o endereço completo do seu fiador? O CEP você irá informar na próxima pergunta."
+        // User script only asked "Full Address" + "CEP". So we just map 'guarantor_street' to 'guarantor_address'.
+        this.formData.guarantor_address = this.formData.guarantor_street;
+
+        // Ensure duration is set
+        this.formData.duration = 'long';
+
         try {
             const applicationData = {
                 language: i18n.currentLanguage,
@@ -394,7 +405,7 @@ class ConversationalForm {
             console.error(error);
             this.showError(error.message || 'Error');
             btn.disabled = false;
-            btn.textContent = i18n.t('form.submit');
+            btn.textContent = i18n.t('form.privacy_agree_btn');
         }
     }
 
