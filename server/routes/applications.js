@@ -25,6 +25,86 @@ const CURRENCY_BY_COUNTRY = {
 };
 
 /**
+ * GET /api/applications/test-email
+ * Debug endpoint to verify both Applicant and Internal emails
+ */
+router.get('/test-email', async (req, res) => {
+    try {
+        const testData = {
+            id: 'TEST-' + Math.floor(Math.random() * 1000),
+            created_at: new Date().toISOString(),
+            status: 'PRE_APPROVED_UNDER_REVIEW',
+            student_name: 'Test Student',
+            student_email: process.env.FROM_EMAIL,
+            student_phone: '+55 11 99999-9999',
+            student_birthdate: '01/01/1990',
+            student_address: 'Rua Teste, 123',
+            student_postal: '01000-000',
+            student_occupation: 'Developer',
+            student_income: '5000.00',
+            country: 'brazil',
+            campus: 'dublin',
+            shift: 'am',
+            duration: 'long',
+            duration_choice: 'long',
+            priceBase: '2950.00',
+            entryPercent: '0.30',
+            entryAmount: '885.00',
+            financedAmount: '2065.00',
+            installments: 12,
+            interestPercent: '0.02',
+            monthlyInstallment: '180.54',
+            travel_date: '15/05/2025',
+            guarantor_name: 'Test Guarantor',
+            guarantor_email: process.env.FROM_EMAIL,
+            guarantor_phone: '+55 11 88888-8888',
+            guarantor_birthdate: '01/01/1970',
+            guarantor_address: 'Rua Guarantor, 456',
+            guarantor_postal: '01000-001',
+            guarantor_occupation: 'Manager',
+            guarantor_relationship: 'father',
+            guarantor_income: '8000.00'
+        };
+
+        const logs = [];
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+
+        // Redirect console to capture for response
+        console.log = (...args) => { logs.push(`[LOG] ${args.join(' ')}`); originalLog(...args); };
+        console.warn = (...args) => { logs.push(`[WARN] ${args.join(' ')}`); originalWarn(...args); };
+        console.error = (...args) => { logs.push(`[ERROR] ${args.join(' ')}`); originalError(...args); };
+
+        try {
+            await sendApplicantEmail(testData, 'pt');
+            await sendInternalEmail(testData);
+        } finally {
+            // Restore console
+            console.log = originalLog;
+            console.warn = originalWarn;
+            console.error = originalError;
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Internal and Applicant email tests triggered.',
+            recipients_internal: process.env.INTERNAL_NOTIFICATION_EMAILS,
+            from: process.env.FROM_EMAIL,
+            logs: logs
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Email Test Failed',
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
+/**
  * POST /api/applications
  * Submit a new finance plan application
  */

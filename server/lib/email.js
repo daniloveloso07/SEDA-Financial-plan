@@ -305,23 +305,25 @@ export async function sendInternalEmail(application) {
     </html>
   `;
 
-  const recipients = process.env.INTERNAL_NOTIFICATION_EMAILS?.split(',') || [];
+  const recipients = process.env.INTERNAL_NOTIFICATION_EMAILS?.split(',').map(e => e.trim()).filter(e => e) || [];
+
+  console.log(`📧 Attempting to send internal notification to ${recipients.length} recipients:`, recipients);
 
   if (recipients.length === 0) {
-    console.warn('⚠️ No internal notification emails configured');
+    console.warn('⚠️ No internal notification emails configured in INTERNAL_NOTIFICATION_EMAILS');
     return;
   }
 
   const mailOptions = {
     from: process.env.FROM_EMAIL,
-    to: recipients.join(','),
+    to: recipients, // Pass the array directly
     subject: subject,
     html: htmlContent
   };
 
   try {
     const data = await sendResendEmail(mailOptions);
-    console.log(`✅ Internal email sent to ${recipients.join(', ')}`, data);
+    console.log(`✅ Internal email sent successfully`, data);
   } catch (error) {
     console.error('❌ Error sending internal email:', error);
     throw error;
