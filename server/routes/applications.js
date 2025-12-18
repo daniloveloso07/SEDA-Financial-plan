@@ -7,11 +7,25 @@ import { insertApplication, initializeDatabase } from '../db/database.js';
 import { classifyApplication } from '../lib/classification.js';
 import { calculateFinancePlan } from '../lib/calculator.js';
 import { sendApplicantEmail, sendInternalEmail } from '../lib/email.js';
+import { convertToEUR } from '../lib/fx-service.js';
 
 const router = express.Router();
 
 // Initialize database on module load
 initializeDatabase().catch(console.error);
+
+// Currency mapping for backend (same as frontend)
+const CURRENCY_BY_COUNTRY = {
+    'brazil': 'BRL',
+    'paraguay': 'PYG',
+    'argentina': 'ARS',
+    'chile': 'CLP',
+    'uruguay': 'UYU',
+    'mexico': 'MXN',
+    'costa_rica': 'CRC',
+    'el_salvador': 'USD',
+    'guatemala': 'GTQ'
+};
 
 /**
  * POST /api/applications
@@ -24,10 +38,10 @@ router.post('/', async (req, res) => {
         // Validate required fields
         const requiredFields = [
             'language', 'student_name', 'student_email', 'student_phone',
-            'student_birthdate', 'student_address', 'student_postal',
+            'student_birthdate', 'student_id', 'student_address', 'student_postal',
             'student_occupation', 'travel_date', 'country', 'duration',
             'guarantor_name', 'guarantor_email', 'guarantor_phone',
-            'guarantor_birthdate', 'guarantor_address', 'guarantor_postal',
+            'guarantor_birthdate', 'guarantor_id', 'guarantor_address', 'guarantor_postal',
             'guarantor_occupation', 'guarantor_relationship'
         ];
 
@@ -43,7 +57,6 @@ router.post('/', async (req, res) => {
         // Recalculate finance plan on server side (don't trust client data)
         let financePlan;
         try {
-            // Use data from calculator if provided, otherwise use defaults
             const campus = data.campus || 'dublin';
             const shift = data.shift || 'am';
             const entryPercent = data.entryPercent || data.entry_percent || 0.30;
@@ -55,6 +68,28 @@ router.post('/', async (req, res) => {
                 success: false,
                 message: 'Invalid calculator parameters'
             });
+        }
+
+        // Handle FX conversion for incomes
+        const currencyCode = CURRENCY_BY_COUNTRY[data.country] || 'USD';
+
+        let studentFX = { amountEUR: null };
+        let guarantorFX = { amountEUR: null };
+        let fxMetadata = { rate: null, date: null };
+
+        if (data.student_income) {
+            studentFX = await convertToEUR(parseFloat(data.student_income), currencyCode);
+            fxMetadata.rate = studentFX.rate;
+            fxMetadata.date = studentFX.date;
+        }
+
+        if (data.guarantor_income) {
+            guarantorFX = await convertToEUR(parseFloat(data.guarantor_income), currencyCode);
+            // Use guarantor FX if student FX failed or wasn't provided
+            if (!fxMetadata.rate) {
+                fxMetadata.rate = guarantorFX.rate;
+                fxMetadata.date = guarantorFX.date;
+            }
         }
 
         // Classify application
@@ -72,10 +107,13 @@ router.post('/', async (req, res) => {
             student_email: data.student_email,
             student_phone: data.student_phone,
             student_birthdate: data.student_birthdate,
+            student_id: data.student_id,
             student_address: data.student_address,
             student_postal: data.student_postal,
             student_occupation: data.student_occupation,
             student_income: data.student_income || null,
+            student_income_currency: currencyCode,
+            student_income_eur_est: studentFX.amountEUR,
             travel_date: data.travel_date,
             country: data.country,
             duration: data.duration,
@@ -83,11 +121,16 @@ router.post('/', async (req, res) => {
             guarantor_email: data.guarantor_email,
             guarantor_phone: data.guarantor_phone,
             guarantor_birthdate: data.guarantor_birthdate,
+            guarantor_id: data.guarantor_id,
             guarantor_address: data.guarantor_address,
             guarantor_postal: data.guarantor_postal,
             guarantor_occupation: data.guarantor_occupation,
             guarantor_relationship: data.guarantor_relationship,
-            guarantor_income: data.guarantor_income || null
+            guarantor_income: data.guarantor_income || null,
+            guarantor_income_currency: currencyCode,
+            guarantor_income_eur_est: guarantorFX.amountEUR,
+            fx_rate: fxMetadata.rate,
+            fx_date: fxMetadata.date
         };
 
         // Insert into database
@@ -114,7 +157,6 @@ router.post('/', async (req, res) => {
             })
         ]).catch(error => {
             console.error('Email sending error:', error);
-            // Don't fail the request if emails fail
         });
 
         // Return success response

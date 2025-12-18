@@ -63,7 +63,11 @@ CREATE TABLE IF NOT EXISTS finance_applications (
   guarantor_relationship VARCHAR(50) NOT NULL,
   guarantor_income DECIMAL(10, 2),
   guarantor_income_currency VARCHAR(10),
-  guarantor_income_eur_est DECIMAL(10, 2)
+  guarantor_income_eur_est DECIMAL(10, 2),
+  
+  -- FX metadata
+  fx_rate DECIMAL(18, 10),
+  fx_date VARCHAR(20)
 );
 
 CREATE INDEX IF NOT EXISTS idx_applications_email ON finance_applications(student_email);
@@ -88,13 +92,15 @@ export async function insertApplication(data) {
     INSERT INTO finance_applications (
       language, status, campus, shift, price_base, entry_percent, entry_amount,
       installments, interest_percent, financed_amount, total_financed, monthly_installment,
-      student_name, student_email, student_phone, student_birthdate, student_address,
-      student_postal, student_occupation, student_income, travel_date, country, duration_choice,
-      guarantor_name, guarantor_email, guarantor_phone, guarantor_birthdate, guarantor_address,
-      guarantor_postal, guarantor_occupation, guarantor_relationship, guarantor_income
+      student_name, student_email, student_phone, student_birthdate, student_id, student_address,
+      student_postal, student_occupation, student_income, student_income_currency, student_income_eur_est,
+      travel_date, country, duration_choice,
+      guarantor_name, guarantor_email, guarantor_phone, guarantor_birthdate, guarantor_id, guarantor_address,
+      guarantor_postal, guarantor_occupation, guarantor_relationship, guarantor_income, guarantor_income_currency, guarantor_income_eur_est,
+      fx_rate, fx_date
     ) VALUES (
       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
-      $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32
+      $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40
     ) RETURNING id, created_at
   `;
 
@@ -115,10 +121,13 @@ export async function insertApplication(data) {
     data.student_email,
     data.student_phone,
     data.student_birthdate,
+    data.student_id,
     data.student_address,
     data.student_postal,
     data.student_occupation,
     data.student_income || null,
+    data.student_income_currency || null,
+    data.student_income_eur_est || null,
     data.travel_date,
     data.country,
     data.duration,
@@ -126,11 +135,16 @@ export async function insertApplication(data) {
     data.guarantor_email,
     data.guarantor_phone,
     data.guarantor_birthdate,
+    data.guarantor_id,
     data.guarantor_address,
     data.guarantor_postal,
     data.guarantor_occupation,
     data.guarantor_relationship,
-    data.guarantor_income || null
+    data.guarantor_income || null,
+    data.guarantor_income_currency || null,
+    data.guarantor_income_eur_est || null,
+    data.fx_rate || null,
+    data.fx_date || null
   ];
 
   try {
