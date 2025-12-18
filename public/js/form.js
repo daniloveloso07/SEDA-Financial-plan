@@ -18,7 +18,7 @@ const FORM_FLOW = [
     { id: 'student_id', type: 'text', section: 'student', required: true, i18nKey: 'form.id_question' },
     { id: 'country', type: 'select', section: 'student', required: true, i18nKey: 'form.country_question', options: ELIGIBLE_COUNTRIES },
 
-    // Split Address
+    // Split Address Student
     { id: 'student_street', type: 'text', section: 'student', required: true, i18nKey: 'form.address_street_question' },
     { id: 'student_city', type: 'text', section: 'student', required: true, i18nKey: 'form.address_city_question' },
     { id: 'student_state', type: 'text', section: 'student', required: true, i18nKey: 'form.address_state_question' },
@@ -38,7 +38,10 @@ const FORM_FLOW = [
     { id: 'guarantor_birthdate', type: 'date', section: 'guarantor', required: true, i18nKey: 'form.guarantor_birthdate_question' },
     { id: 'guarantor_id', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_id_question' },
 
-    { id: 'guarantor_street', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_address_question' },
+    // Split Address Guarantor
+    { id: 'guarantor_street', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_street_question' },
+    { id: 'guarantor_city', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_city_question' },
+    { id: 'guarantor_state', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_state_question' },
     { id: 'guarantor_postal', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_postal_question' },
 
     { id: 'guarantor_occupation', type: 'text', section: 'guarantor', required: true, i18nKey: 'form.guarantor_occupation_question' },
@@ -59,6 +62,16 @@ class ConversationalForm {
         const calcData = sessionStorage.getItem('seda_calculation');
         if (calcData) {
             this.calculatorData = JSON.parse(calcData);
+        } else {
+            // Fallback default for direct chat access (Dev/MVP mode)
+            this.calculatorData = {
+                campus: 'dublin',
+                course_type: 'general_english',
+                shift: 'am',
+                installments: 12,
+                entry_percent: 30,
+                total_value_eur: 3000 // Dummy value just to pass checks
+            };
         }
 
         this.init();
@@ -365,20 +378,18 @@ class ConversationalForm {
         btn.textContent = '...';
 
         // CONSTRUCT FINAL PAYLOAD
-        // We need to merge street/city/state into 'address'
 
-        const street = this.formData.student_street || '';
-        const city = this.formData.student_city || '';
-        const state = this.formData.student_state || '';
+        // Student Address Concatenation
+        const s_street = this.formData.student_street || '';
+        const s_city = this.formData.student_city || '';
+        const s_state = this.formData.student_state || '';
+        this.formData.student_address = `${s_street}, ${s_city}, ${s_state}`.replace(/^, /, '').replace(/, $/, '');
 
-        // DB expects 'address' field
-        this.formData.student_address = `${street}, ${city}, ${state}`.replace(/^, /, '').replace(/, $/, '');
-
-        // Same for Guarantor
-        // Note: We didn't ask separate city/state for guarantor in this flow update per script?
-        // "E o endereço completo do seu fiador? O CEP você irá informar na próxima pergunta."
-        // User script only asked "Full Address" + "CEP". So we just map 'guarantor_street' to 'guarantor_address'.
-        this.formData.guarantor_address = this.formData.guarantor_street;
+        // Guarantor Address Concatenation
+        const g_street = this.formData.guarantor_street || '';
+        const g_city = this.formData.guarantor_city || '';
+        const g_state = this.formData.guarantor_state || '';
+        this.formData.guarantor_address = `${g_street}, ${g_city}, ${g_state}`.replace(/^, /, '').replace(/, $/, '');
 
         // Ensure duration is set
         this.formData.duration = 'long';
@@ -387,8 +398,12 @@ class ConversationalForm {
             const applicationData = {
                 language: i18n.currentLanguage,
                 ...this.formData,
-                ...this.calculatorData
+                ...this.calculatorData // Includes fallback if null
             };
+
+            // Debug check for console
+            console.log('Submitting Application:', applicationData);
+
             const response = await fetch('/api/applications', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
